@@ -6,11 +6,11 @@ library(Rcpp)
 library(RcppEigen)
 library(ggplot2)
 # Sys.setenv("PKG_CPPFLAGS" = "-march=native")
-sourceCpp(file = "NT.cpp")
-sourceCpp(file = "NT_homo.cpp")
-sourceCpp(file = "SimSet_b.cpp")
-sourceCpp(file = "CI.cpp")
-source(file = "NewtonMCHomo_R.R")
+sourceCpp(file = "cpp/NT.cpp")
+sourceCpp(file = "cpp/NT_homo.cpp")
+sourceCpp(file = "cpp/SimSet_b.cpp")
+sourceCpp(file = "cpp/CI.cpp")
+# source(file = "NewtonMCHomo_R.R")
 set.seed(100)
 n = 100
 p = 3 # covariates dimention
@@ -184,7 +184,7 @@ for( i in iseq){
   }
   es_Ni_list[[i]] = rbind(N = dd$N, es_Ni = es_Ni)
 }
-save(es_Ni_list, file = "goodness_of_fit/es_Ni_case_1.rdata")
+save(es_Ni_list, file = "simu_results/goodness_of_fit/es_Ni_case_1.rdata")
 re_i <- c()
 for(i in iseq){
   re <- cbind(t(es_Ni_list[[i]]), i)
@@ -222,7 +222,7 @@ for( j in iseq){
   }
   es_Nj_list[[j]] = rbind(N = dd$N, es_Nj = es_Nj)
 }
-save(es_Nj_list, file = "goodness_of_fit/es_Nj_case_1.rdata")
+save(es_Nj_list, file = "simu_results/goodness_of_fit/es_Nj_case_1.rdata")
 
 ##################
 # Homo
@@ -302,7 +302,7 @@ for( i in iseq){
   }
   es_Ni_homo_list[[i]] = rbind(N = dd$N, es_Ni_homo = es_Ni_homo)
 }
-save(es_Ni_homo_list, file = "goodness_of_fit/homo_es_Ni_case_1.rdata")
+save(es_Ni_homo_list, file = "simu_results/goodness_of_fit/homo_es_Ni_case_1.rdata")
 
 re_i <- c()
 for(i in iseq){
@@ -350,4 +350,4 @@ for( j in iseq){
   }
   es_Nj_homo_list[[j]] = rbind(N = dd$N, es_Nj_homo = es_Nj_homo)
 }
-save(es_Nj_homo_list, file = "goodness_of_fit/homo_es_Nj_case_1.rdata")
+save(es_Nj_homo_list, file = "simu_results/goodness_of_fit/homo_es_Nj_case_1.rdata")

@@ -36,11 +36,11 @@ ci_tidy <- function(CIs){
 ## n = 60
 ```{r}
 n = 60
-load(file = paste0("simuresult_Tab1-4_Fig2/re_n=", n, "/MISES.rdata"))
-write.csv(MISEs, file = paste0("simuresult_Tab1-4_Fig2/re_n=", n, "/MISEs.csv"))
+load(file = paste0("simu_results/simuresult_Tab1-4_Fig2/re_n=", n, "/MISES.rdata"))
+write.csv(MISEs, file = paste0("simu_results/simuresult_Tab1-4_Fig2/re_n=", n, "/MISEs.csv"))
 MISEs
-load(file = paste0("simuresult_Tab1-4_Fig2/re_n=", n, "/CIs.rdata"))
-write.csv(CIs, file = paste0("simuresult_Tab1-4_Fig2/re_n=", n, "/CIs.csv"))
+load(file = paste0("simu_results/simuresult_Tab1-4_Fig2/re_n=", n, "/CIs.rdata"))
+write.csv(CIs, file = paste0("simu_results/simuresult_Tab1-4_Fig2/re_n=", n, "/CIs.csv"))
 CIs
 ```
 
@@ -48,33 +48,33 @@ CIs
 ## n = 100
 ```{r}
 n = 100
-load(file = paste0("simuresult_Tab1-4_Fig2/re_n=", n, "/MISES.rdata"))
-write.csv(MISEs, file = paste0("simuresult_Tab1-4_Fig2/re_n=", n, "/MISEs.csv"))
+load(file = paste0("simu_results/simuresult_Tab1-4_Fig2/re_n=", n, "/MISES.rdata"))
+write.csv(MISEs, file = paste0("simu_results/simuresult_Tab1-4_Fig2/re_n=", n, "/MISEs.csv"))
 MISEs
-load(file = paste0("simuresult_Tab1-4_Fig2/re_n=", n, "/CIs.rdata"))
-write.csv(CIs, file = paste0("simuresult_Tab1-4_Fig2/re_n=", n, "/CIs.csv"))
+load(file = paste0("simu_results/simuresult_Tab1-4_Fig2/re_n=", n, "/CIs.rdata"))
+write.csv(CIs, file = paste0("simu_results/simuresult_Tab1-4_Fig2/re_n=", n, "/CIs.csv"))
 CIs
 ```
 
 ## n = 200
 ```{r}
 n = 200
-load(file = paste0("simuresult_Tab1-4_Fig2/re_n=", n, "/MISES.rdata"))
-write.csv(MISEs, file = paste0("simuresult_Tab1-4_Fig2/re_n=", n, "/MISEs.csv"))
+load(file = paste0("simu_results/simuresult_Tab1-4_Fig2/re_n=", n, "/MISES.rdata"))
+write.csv(MISEs, file = paste0("simu_results/simuresult_Tab1-4_Fig2/re_n=", n, "/MISEs.csv"))
 MISEs
-load(file = paste0("simuresult_Tab1-4_Fig2/re_n=", n, "/CIs.rdata"))
-write.csv(CIs, file = paste0("simuresult_Tab1-4_Fig2/re_n=", n, "/CIs.csv"))
+load(file = paste0("simu_results/simuresult_Tab1-4_Fig2/re_n=", n, "/CIs.rdata"))
+write.csv(CIs, file = paste0("simu_results/simuresult_Tab1-4_Fig2/re_n=", n, "/CIs.csv"))
 CIs
 ```
 
 ## n = 500
 ```{r}
 n = 500
-load(file = paste0("simuresult_Tab1-4_Fig2/re_n=", n, "/MISES.rdata"))
-write.csv(MISEs, file = paste0("simuresult_Tab1-4_Fig2/re_n=", n, "/MISEs.csv"))
+load(file = paste0("simu_results/simuresult_Tab1-4_Fig2/re_n=", n, "/MISES.rdata"))
+write.csv(MISEs, file = paste0("simu_results/simuresult_Tab1-4_Fig2/re_n=", n, "/MISEs.csv"))
 MISEs
-load(file = paste0("simuresult_Tab1-4_Fig2/re_n=", n, "/CIs.rdata"))
-write.csv(CIs, file = paste0("simuresult_Tab1-4_Fig2/re_n=", n, "/CIs.csv"))
+load(file = paste0("simu_results/simuresult_Tab1-4_Fig2/re_n=", n, "/CIs.rdata"))
+write.csv(CIs, file = paste0("simu_results/simuresult_Tab1-4_Fig2/re_n=", n, "/CIs.csv"))
 CIs
 ```
 
@@ -83,78 +83,78 @@ CIs
 ## Ini = 0; True
 ```{r}
 ini = 0
-load(file = paste0("simu_ini_change/re_ini=", ini, "/MISES.rdata"))
-write.csv(MISEs, file = paste0("simu_ini_change/re_ini=", ini, "/MISEs.csv"))
+load(file = paste0("simu_results/simu_ini_change/re_ini=", ini, "/MISES.rdata"))
+write.csv(MISEs, file = paste0("simu_results/simu_ini_change/re_ini=", ini, "/MISEs.csv"))
 MISEs
 ```
 ```{r}
-load(file = paste0("simu_ini_change/re_ini=", ini, "/CIs.rdata"))
-write.csv(CIs, file = paste0("simu_ini_change/re_ini=", ini, "/CIs.csv"))
+load(file = paste0("simu_results/simu_ini_change/re_ini=", ini, "/CIs.rdata"))
+write.csv(CIs, file = paste0("simu_results/simu_ini_change/re_ini=", ini, "/CIs.csv"))
 CIs
 ```
 ```{r}
-Runningtime = read.csv(file = paste0("simu_ini_change/re_ini=", ini, "/time.csv"))
+Runningtime = read.csv(file = paste0("simu_results/simu_ini_change/re_ini=", ini, "/time.csv"))
 Runningtime
 ```
 
 ## Ini = -1
 ```{r}
 ini = -1
-load(file = paste0("simu_ini_change/re_ini=", ini, "/MISES.rdata"))
-write.csv(MISEs, file = paste0("simu_ini_change/re_ini=", ini, "/MISEs.csv"))
+load(file = paste0("simu_results/simu_ini_change/re_ini=", ini, "/MISES.rdata"))
+write.csv(MISEs, file = paste0("simu_results/simu_ini_change/re_ini=", ini, "/MISEs.csv"))
 MISEs
 ```
 ```{r}
-load(file = paste0("simu_ini_change/re_ini=", ini, "/CIs.rdata"))
-write.csv(CIs, file = paste0("simu_ini_change/re_ini=", ini, "/CIs.csv"))
+load(file = paste0("simu_results/simu_ini_change/re_ini=", ini, "/CIs.rdata"))
+write.csv(CIs, file = paste0("simu_results/simu_ini_change/re_ini=", ini, "/CIs.csv"))
 CIs
 ```
 ```{r}
-Runningtime = read.csv(file = paste0("simu_ini_change/re_ini=", ini, "/time.csv"))
+Runningtime = read.csv(file = paste0("simu_results/simu_ini_change/re_ini=", ini, "/time.csv"))
 Runningtime
 ```
 
 ## Ini = 2
 ```{r}
 ini = 2
-load(file = paste0("simu_ini_change/re_ini=", ini, "/MISES.rdata"))
-write.csv(MISEs, file = paste0("simu_ini_change/re_ini=", ini, "/MISEs.csv"))
+load(file = paste0("simu_results/simu_ini_change/re_ini=", ini, "/MISES.rdata"))
+write.csv(MISEs, file = paste0("simu_results/simu_ini_change/re_ini=", ini, "/MISEs.csv"))
 MISEs
 ```
 ```{r}
-load(file = paste0("simu_ini_change/re_ini=", ini, "/CIs.rdata"))
-write.csv(CIs, file = paste0("simu_ini_change/re_ini=", ini, "/CIs.csv"))
+load(file = paste0("simu_results/simu_ini_change/re_ini=", ini, "/CIs.rdata"))
+write.csv(CIs, file = paste0("simu_results/simu_ini_change/re_ini=", ini, "/CIs.csv"))
 CIs
 ```
 ```{r}
-Runningtime = read.csv(file = paste0("simu_ini_change/re_ini=", ini, "/time.csv"))
+Runningtime = read.csv(file = paste0("simu_results/simu_ini_change/re_ini=", ini, "/time.csv"))
 Runningtime
 ```
 
 ## Ini = 5
 ```{r}
 ini = 5
-load(file = paste0("simu_ini_change/re_ini=", ini, "/MISES.rdata"))
-write.csv(MISEs, file = paste0("simu_ini_change/re_ini=", ini, "/MISEs.csv"))
+load(file = paste0("simu_results/simu_ini_change/re_ini=", ini, "/MISES.rdata"))
+write.csv(MISEs, file = paste0("simu_results/simu_ini_change/re_ini=", ini, "/MISEs.csv"))
 MISEs
 ```
 ```{r}
-load(file = paste0("simu_ini_change/re_ini=", ini, "/CIs.rdata"))
-write.csv(CIs, file = paste0("simu_ini_change/re_ini=", ini, "/CIs.csv"))
+load(file = paste0("simu_results/simu_ini_change/re_ini=", ini, "/CIs.rdata"))
+write.csv(CIs, file = paste0("simu_results/simu_ini_change/re_ini=", ini, "/CIs.csv"))
 CIs
 ```
 ```{r}
-Runningtime = read.csv(file = paste0("simu_ini_change/re_ini=", ini, "/time.csv"))
+Runningtime = read.csv(file = paste0("simu_results/simu_ini_change/re_ini=", ini, "/time.csv"))
 Runningtime
 ```
 
 
 # Simulations: Figure 3: Bias of K'th method
 ```{r echo=FALSE}
-knitr::include_graphics(paste0("simu_fig3/b=0.pdf"))
-knitr::include_graphics(paste0("simu_fig3/b=0.33.pdf"))
-knitr::include_graphics(paste0("simu_fig3/b=0.5.pdf"))
-knitr::include_graphics(paste0("simu_fig3/b=1.pdf"))
+knitr::include_graphics(paste0("simu_results/simu_fig3/b=0.pdf"))
+knitr::include_graphics(paste0("simu_results/simu_fig3/b=0.33.pdf"))
+knitr::include_graphics(paste0("simu_results/simu_fig3/b=0.5.pdf"))
+knitr::include_graphics(paste0("simu_results/simu_fig3/b=1.pdf"))
 ```
 
 # Simulations: Z dependent
@@ -162,37 +162,37 @@ knitr::include_graphics(paste0("simu_fig3/b=1.pdf"))
 ## rho = 0.2
 ```{r}
 rho = 0.2
-knitr::include_graphics(paste0("simu_z_dependent/re_n=100rho=", rho, "/alpha1.pdf"))
-knitr::include_graphics(paste0("simu_z_dependent/re_n=100rho=", rho, "/beta1.pdf"))
-knitr::include_graphics(paste0("simu_z_dependent/re_n=100rho=", rho, "/gamma1.pdf"))
-knitr::include_graphics(paste0("simu_z_dependent/re_n=100rho=", rho, "/gamma2.pdf"))
+knitr::include_graphics(paste0("simu_results/simu_z_dependent/re_n=100rho=", rho, "/alpha1.pdf"))
+knitr::include_graphics(paste0("simu_results/simu_z_dependent/re_n=100rho=", rho, "/beta1.pdf"))
+knitr::include_graphics(paste0("simu_results/simu_z_dependent/re_n=100rho=", rho, "/gamma1.pdf"))
+knitr::include_graphics(paste0("simu_results/simu_z_dependent/re_n=100rho=", rho, "/gamma2.pdf"))
 ```
 
 ## rho = 0.4
 ```{r}
 rho = 0.4
-knitr::include_graphics(paste0("simu_z_dependent/re_n=100rho=", rho, "/alpha1.pdf"))
-knitr::include_graphics(paste0("simu_z_dependent/re_n=100rho=", rho, "/beta1.pdf"))
-knitr::include_graphics(paste0("simu_z_dependent/re_n=100rho=", rho, "/gamma1.pdf"))
-knitr::include_graphics(paste0("simu_z_dependent/re_n=100rho=", rho, "/gamma2.pdf"))
+knitr::include_graphics(paste0("simu_results/simu_z_dependent/re_n=100rho=", rho, "/alpha1.pdf"))
+knitr::include_graphics(paste0("simu_results/simu_z_dependent/re_n=100rho=", rho, "/beta1.pdf"))
+knitr::include_graphics(paste0("simu_results/simu_z_dependent/re_n=100rho=", rho, "/gamma1.pdf"))
+knitr::include_graphics(paste0("simu_results/simu_z_dependent/re_n=100rho=", rho, "/gamma2.pdf"))
 ```
 
 ## rho = 0.6
 ```{r}
 rho = 0.6
-knitr::include_graphics(paste0("simu_z_dependent/re_n=100rho=", rho, "/alpha1.pdf"))
-knitr::include_graphics(paste0("simu_z_dependent/re_n=100rho=", rho, "/beta1.pdf"))
-knitr::include_graphics(paste0("simu_z_dependent/re_n=100rho=", rho, "/gamma1.pdf"))
-knitr::include_graphics(paste0("simu_z_dependent/re_n=100rho=", rho, "/gamma2.pdf"))
+knitr::include_graphics(paste0("simu_results/simu_z_dependent/re_n=100rho=", rho, "/alpha1.pdf"))
+knitr::include_graphics(paste0("simu_results/simu_z_dependent/re_n=100rho=", rho, "/beta1.pdf"))
+knitr::include_graphics(paste0("simu_results/simu_z_dependent/re_n=100rho=", rho, "/gamma1.pdf"))
+knitr::include_graphics(paste0("simu_results/simu_z_dependent/re_n=100rho=", rho, "/gamma2.pdf"))
 ```
 
 ## rho = 0.8
 ```{r}
 rho = 0.8
-knitr::include_graphics(paste0("simu_z_dependent/re_n=100rho=", rho, "/alpha1.pdf"))
-knitr::include_graphics(paste0("simu_z_dependent/re_n=100rho=", rho, "/beta1.pdf"))
-knitr::include_graphics(paste0("simu_z_dependent/re_n=100rho=", rho, "/gamma1.pdf"))
-knitr::include_graphics(paste0("simu_z_dependent/re_n=100rho=", rho, "/gamma2.pdf"))
+knitr::include_graphics(paste0("simu_results/simu_z_dependent/re_n=100rho=", rho, "/alpha1.pdf"))
+knitr::include_graphics(paste0("simu_results/simu_z_dependent/re_n=100rho=", rho, "/beta1.pdf"))
+knitr::include_graphics(paste0("simu_results/simu_z_dependent/re_n=100rho=", rho, "/gamma1.pdf"))
+knitr::include_graphics(paste0("simu_results/simu_z_dependent/re_n=100rho=", rho, "/gamma2.pdf"))
 ```
 
 
@@ -200,8 +200,8 @@ knitr::include_graphics(paste0("simu_z_dependent/re_n=100rho=", rho, "/gamma2.pd
 
 ## Our's method ( effect)
 ```{r echo=F}
-load("goodness_of_fit/es_Ni_case_1.rdata")
-load("goodness_of_fit/es_Nj_case_1.rdata")
+load("simu_results/goodness_of_fit/es_Ni_case_1.rdata")
+load("simu_results/goodness_of_fit/es_Nj_case_1.rdata")
 iseq <- c(1:100)
 re_i <- c()
 for(i in iseq){
@@ -248,8 +248,8 @@ ggplot(re_j, aes(x = `Number of events of receivers`, y = `Esimtated cumulative 
 ## K's method (homo effect)
 
 ```{r echo=F}
-load("goodness_of_fit/homo_es_Ni_case_1.rdata")
-load("goodness_of_fit/homo_es_Nj_case_1.rdata")
+load("simu_results/goodness_of_fit/homo_es_Ni_case_1.rdata")
+load("simu_results/goodness_of_fit/homo_es_Nj_case_1.rdata")
 re_i <- c()
 for(i in iseq){
   re <- cbind(t(es_Ni_homo_list[[i]]), i)
@@ -294,8 +294,8 @@ ggplot(re_j, aes(x = `Number of events of receivers`, y = `Esimtated cumulative 
 
 ## Our's method ( effect)
 ```{r echo=F}
-load("goodness_of_fit/es_Ni_case_2.rdata")
-load("goodness_of_fit/es_Nj_case_2.rdata")
+load("simu_results/goodness_of_fit/es_Ni_case_2.rdata")
+load("simu_results/goodness_of_fit/es_Nj_case_2.rdata")
 re_i <- c()
 for(i in iseq){
   re <- cbind(t(es_Ni_list[[i]]), i)
@@ -340,8 +340,8 @@ ggplot(re_j, aes(x = `Number of events of receivers`, y = `Esimtated cumulative 
 ## K's method (homo effect)
 
 ```{r echo=F}
-load("goodness_of_fit/homo_es_Ni_case_2.rdata")
-load("goodness_of_fit/homo_es_Nj_case_2.rdata")
+load("simu_results/goodness_of_fit/homo_es_Ni_case_2.rdata")
+load("simu_results/goodness_of_fit/homo_es_Nj_case_2.rdata")
 re_i <- c()
 for(i in iseq){
   re <- cbind(t(es_Ni_homo_list[[i]]), i)
@@ -391,8 +391,8 @@ ggplot(re_j, aes(x = `Number of events of receivers`, y = `Esimtated cumulative 
 
 ## Our's method ( effect)
 ```{r echo=F}
-load("goodness_of_fit/es_Ni_case_3.rdata")
-load("goodness_of_fit/es_Nj_case_3.rdata")
+load("simu_results/goodness_of_fit/es_Ni_case_3.rdata")
+load("simu_results/goodness_of_fit/es_Nj_case_3.rdata")
 re_i <- c()
 for(i in iseq){
   re <- cbind(t(es_Ni_list[[i]]), i)
@@ -437,8 +437,8 @@ ggplot(re_j, aes(x = `Number of events of receivers`, y = `Esimtated cumulative 
 ## K's method (homo effect)
 
 ```{r echo=F}
-load("goodness_of_fit/homo_es_Ni_case_3.rdata")
-load("goodness_of_fit/homo_es_Nj_case_3.rdata")
+load("simu_results/goodness_of_fit/homo_es_Ni_case_3.rdata")
+load("simu_results/goodness_of_fit/homo_es_Nj_case_3.rdata")
 re_i <- c()
 for(i in iseq){
   re <- cbind(t(es_Ni_homo_list[[i]]), i)
@@ -489,7 +489,7 @@ ggplot(re_j, aes(x = `Number of events of receivers`, y = `Esimtated cumulative 
 
 ```{r echo=F}
 # 创建示例矩阵数据
-read.csv("simu_CV/n=100.csv", header = T) -> aa
+read.csv("simu_results/simu_CV/n=100.csv", header = T) -> aa
 rownames(aa) <- aa[, 1]
 aa[, -1] -> aa
 aa %>% as.matrix() -> data_matrix
@@ -511,7 +511,7 @@ ggplot(data_long, aes(x = h1_numeric, y = value, group = `h2 values`, color = `h
 p1
 ```
 ```{r eval = F, echo=F}
-pdf(file = "simu_CV/n=100.pdf")
+pdf(file = "simu_results/simu_CV/n=100.pdf")
 p1
 dev.off()
 ```

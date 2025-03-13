@@ -10,9 +10,9 @@ library(ggplot2)
 
 # Sys.setenv("PKG_CPPFLAGS" = "-march=native")
 
-sourceCpp(file = "NT.cpp", verbose = TRUE, rebuild = TRUE)
-sourceCpp(file = "SimSet.cpp", verbose = TRUE, rebuild = TRUE)
-sourceCpp(file = "CI.cpp", verbose = TRUE, rebuild = TRUE)
+sourceCpp(file = "cpp/NT.cpp", verbose = TRUE, rebuild = TRUE)
+sourceCpp(file = "cpp/SimSet.cpp", verbose = TRUE, rebuild = TRUE)
+sourceCpp(file = "cpp/CI.cpp", verbose = TRUE, rebuild = TRUE)
 genzij1 <- function(n, rho) {
   # Create the covariance matrix
   Sigma <- matrix(0, n, n)
@@ -42,7 +42,7 @@ genzij2<- function(n, rho) {
   return(random_vector)
 }
 
-n_set <- c(100)
+n_set <- c(10)
 rho_set <- c(0.2, 0.4, 0.6, 0.8)
 
 Total_cont = 1000 # total repeats
@@ -81,7 +81,7 @@ for(n in n_set){
     X_true = rbind(X_true1, X_true2, X_true3, X_true4, X_true5)
     starttime <- Sys.time()
     
-    folder_name <- paste0("simu_z_dependent/re_n=", n, "rho=", rho)
+    folder_name <- paste0("simu_results/simu_z_dependent/re_n=", n, "rho=", rho)
     if (!dir.exists(folder_name)) {
       dir.create(folder_name)
       # cat("文件夹已创建：", folder_name, "\n")
@@ -193,7 +193,7 @@ for(n in n_set){
     colnames(CIs) <- c("t=0.4", "t=0.6", "t=0.8", "t=0.4", "t=0.6", "t=0.8")
     rownames(CIs) <- c("alpha_1", "alpha_n/2+1", "beta_1", "beta_n/2+1", "gamma1", "gamma2")
     CIs
-    save(CIs, file = paste0("simu_z_dependent/re_n=", n, "rho=", rho, "/CIs.rdata"))
+    save(CIs, file = paste0("simu_results/simu_z_dependent/re_n=", n, "rho=", rho, "/CIs.rdata"))
     
     
     
@@ -250,7 +250,7 @@ for(n in n_set){
     names(MISEs) = c("alpha_1", "alpha_n/2+1", "beta_1", "beta_n/2+1", "gamma1",  "gamma2")
     MISEs
     
-    save(MISEs, file = paste0("simu_z_dependent/re_n=", n, "rho=", rho, "/MISES.rdata"))
+    save(MISEs, file = paste0("simu_results/simu_z_dependent/re_n=", n, "rho=", rho, "/MISES.rdata"))
     
     
     
@@ -276,8 +276,8 @@ for(n in n_set){
                     y = xkk_sum[pk,],
                     yl = xl[pk,],
                     yu = xu[pk,])
-    write.csv(p1, file = paste0("simu_z_dependent/re_n=", n, "rho=", rho, "/alpha1.csv"))
-    pdf(paste0("simu_z_dependent/re_n=", n, "rho=", rho, "/alpha1.pdf"))
+    write.csv(p1, file = paste0("simu_results/simu_z_dependent/re_n=", n, "rho=", rho, "/alpha1.csv"))
+    pdf(paste0("simu_results/simu_z_dependent/re_n=", n, "rho=", rho, "/alpha1.pdf"))
     ggplot(p1, aes(x = t, y = y)) +
       geom_line(color = "red") +
       stat_function(fun = fs, args = list(i = pk), color = "black") + 
@@ -293,8 +293,8 @@ for(n in n_set){
                     y = xkk_sum[pk+n,],
                     yl = xl[pk+n,],
                     yu = xu[pk+n,])
-    write.csv(p1, file = paste0("simu_z_dependent/re_n=", n, "rho=", rho, "/beta1.csv"))
-    pdf(paste0("simu_z_dependent/re_n=", n, "rho=", rho, "/beta1.pdf"))
+    write.csv(p1, file = paste0("simu_results/simu_z_dependent/re_n=", n, "rho=", rho, "/beta1.csv"))
+    pdf(paste0("simu_results/simu_z_dependent/re_n=", n, "rho=", rho, "/beta1.pdf"))
     ggplot(p2, aes(x = t, y = y)) +
       geom_line(color = "red") +
       stat_function(fun = fr, args = list(i = pk), color = "black") + 
@@ -311,8 +311,8 @@ for(n in n_set){
                     y = c(xkk_sum[pk,]),
                     yl = c(xl[pk,]),
                     yu = c(xu[pk,]))
-    write.csv(p1, file = paste0("simu_z_dependent/re_n=", n, "rho=", rho, "/gamma1.csv"))
-    pdf(paste0("simu_z_dependent/re_n=", n, "rho=", rho, "/gamma1.pdf"))
+    write.csv(p1, file = paste0("simu_results/simu_z_dependent/re_n=", n, "rho=", rho, "/gamma1.csv"))
+    pdf(paste0("simu_results/simu_z_dependent/re_n=", n, "rho=", rho, "/gamma1.pdf"))
     ggplot(p1, aes(x = t, y = y)) +
       geom_line(color = "red") +
       stat_function(fun = fg, args = list(i = pk), color = "black") + 
@@ -329,9 +329,9 @@ for(n in n_set){
                     y = c(xkk_sum[pk,]),
                     yl = c(xl[pk,]),
                     yu = c(xu[pk,]))
-    write.csv(p1, file = paste0("simu_z_dependent/re_n=", n, "rho=", rho, "/gamma2.csv"))
+    write.csv(p1, file = paste0("simu_results/simu_z_dependent/re_n=", n, "rho=", rho, "/gamma2.csv"))
     
-    pdf(paste0("simu_z_dependent/re_n=", n, "rho=", rho, "/gamma2.pdf"))
+    pdf(paste0("simu_results/simu_z_dependent/re_n=", n, "rho=", rho, "/gamma2.pdf"))
     ggplot(p1, aes(x = t, y = y)) +
       geom_line(color = "red") +
       stat_function(fun = fg, args = list(i = pk), color = "black") + 

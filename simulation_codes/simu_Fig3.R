@@ -3,11 +3,11 @@ library(matrixcalc)
 library(Rcpp)
 library(RcppEigen)
 
-sourceCpp(file = "MatrixSolverC.cpp")
-sourceCpp(file = "NT.cpp")
-sourceCpp(file = "NT_homo.cpp")
-sourceCpp(file = "SimSet_b.cpp")
-sourceCpp(file = "CI.cpp")
+sourceCpp(file = "cpp/MatrixSolverC.cpp")
+sourceCpp(file = "cpp/NT.cpp")
+sourceCpp(file = "cpp/NT_homo.cpp")
+sourceCpp(file = "cpp/SimSet_b.cpp")
+sourceCpp(file = "cpp/CI.cpp")
 fg <- function(t, i) {
   return(sin(2*pi*t)/3)
 } 
@@ -156,7 +156,7 @@ for(b in c(0, 1/3, 1/2, 1)){
     ylab(expression(hat(italic(gamma)))) +
     theme_bw() +
     theme(legend.position = "none") -> pp
-  pdf(file = paste0("simu_fig3/b=",round(b, 2),".pdf"))
+  pdf(file = paste0("simu_results/simu_fig3/b=",round(b, 2),".pdf"))
   plot(pp)
   dev.off()
 }

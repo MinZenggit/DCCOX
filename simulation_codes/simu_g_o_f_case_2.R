@@ -6,57 +6,51 @@ library(Rcpp)
 library(RcppEigen)
 library(ggplot2)
 # Sys.setenv("PKG_CPPFLAGS" = "-march=native")
-sourceCpp(file = "NT.cpp")
-sourceCpp(file = "NT_homo.cpp")
-sourceCpp(file = "SimSet_c.cpp", rebuild = T)
-sourceCpp(file = "CI.cpp")
-source(file = "NewtonMCHomo_R.R")
+sourceCpp(file = "cpp/NT.cpp")
+sourceCpp(file = "cpp/NT_homo.cpp")
+sourceCpp(file = "cpp/SimSet_b.cpp")
+sourceCpp(file = "cpp/CI.cpp")
+# source(file = "NewtonMCHomo_R.R")
 set.seed(100)
 n = 100
-p_true = 3 # covariates dimention
+p = 3 # covariates dimention
 # 4 groups
 t = 0
 b = 1
 
-fg <- function(t,i){
-  sin(2*pi*t)/3
-}
+# s for sender; r for receiver
+fs <- function(t, i) {
+  if (i < n / 2) return(b * (-0.5*log(n)+(3+t/2)))
+  return(0)
+} 
 
+fr <- function(t, i) {
+  if (i < n / 2) return(b * (-0.5*log(n)+(3+t/2)))
+  return(0)
+} 
+
+fg <- function(t, i) {
+  return(sin(2*pi*t)/3)
+} 
 
 xkkk = xkkk2 = list()
 cont = 1
 nnn = 0
 
 
-# zij_true <- array(0, c(n, n, p_true))
-# random_data <- rbinom(n * n, 1, 0.5)  # 产生一些小的噪声
-# zij_true[,,1] <- matrix(random_data, n, n)
-# correlation_factor <- rnorm(n * n, mean = 0, sd = 0.1)
-# zij_true[,,2] <- zij_true[,,1] + matrix(correlation_factor, n, n)
-# zij_true[,,2] <- ifelse(zij_true[,,2] > 1, 1, ifelse(zij_true[,,2] < 0, 0, zij_true[,,2]))
-# correlation_factor <- rnorm(n * n, mean = 0, sd = 0.1)  # 产生一些小的噪声
-# zij_true[,,3] <- zij_true[,,2] + matrix(correlation_factor, n, n)
-# zij_true[,,3] <- ifelse(zij_true[,,3] > 1, 1, ifelse(zij_true[,,3] < 0, 0, zij_true[,,2]))
-zij_true = array(rbinom(n*n*p_true, 1, 0.5), c(n,n,p_true))
-
-trail_sim = SimSetC(n, b, zij_true)
-trail_sim = as.data.frame(trail_sim)
-rv = order(trail_sim[,3])
-trail_sim = trail_sim[rv,]
-nn = nrow(trail_sim)
-colnames(trail_sim) <- c("s", "r", "t")
-
-# p=1
-# zij = array(0, c(n,n,p))
-# zij[,,1] <- zij_true[,,1]
-p=3
-zij <- zij_true
+zij = array(rnorm(n*n*p), c(n,n,p))
 # zij = array(0, c(n, n, p))
 # zij[1:4, 1:(n/3), ] = 1
 ones = array(1, c(n, n, 1))
 zij_new = abind::abind(zij, ones, along = 3)
 #simulate data with reject and accept method; though constant z_ij
+trail_sim = SimSetC(n, b, zij)
+trail_sim = as.data.frame(trail_sim)
 
+rv = order(trail_sim[,3])
+trail_sim = trail_sim[rv,]
+nn = nrow(trail_sim)
+colnames(trail_sim) <- c("s", "r", "t")
 
 # count the total events
 Nij = matrix(0, nrow = n, ncol = n)
@@ -66,8 +60,6 @@ for (z in 1:nn) {
   Nij[i, j] = Nij[i, j] + 1
 }
 
-colMeans(Nij[1:50, ])
-colMeans(Nij[51:100, ])
 # Newton Method -----------------------------------------------------------
 
 
@@ -76,7 +68,7 @@ xkk2 = xkk3 = matrix(rep(0, p+1))
 for (t in seq(0.1,0.9,0.05)) {
   
   print(t)
-  h1 = 0.3*n^(-0.1)
+  h1 = 0.1*n^(-0.1)
   h2 = 0.015*n^(-0.2)
   
   xk1 = NewtonMC(as.matrix(trail_sim), zij, t, h1, h2, n, nn, p)
@@ -93,20 +85,20 @@ xkkHomo = xkk2[, -1]
 # xkkHomo2 = xkk3[, -1]
 
 
-pk=1
-p1 = data.frame(t = rep(seq(0.1,0.9,0.05),2),
-                y = c(xkk[2*n-1+pk,], xkkHomo[pk,]),
-                het = c(rep("y", 17), rep("n", 17)))
-
-ggplot(p1, aes(x = t, y = y, group = het, color = het, fill = het)) +
-  geom_line(size = 0.7) +
-  stat_function(fun = fg, args = list(i = pk), color = "black", size = 0.7) +
-  scale_color_manual(values=c("#619CFF", "red")) +
-  xlab(expression(italic("t"))) +
-  ylab(expression(hat(italic(gamma)))) +
-  theme_bw() +
-  theme(legend.position = "none") -> p1
-plot(p1)
+# pk=4
+# p1 = data.frame(t = rep(seq(0.1,0.9,0.05),2),
+#                 y = c(xkk[2*n-1+pk,], xkkHomo[pk,]),
+#                 het = c(rep("y", 17), rep("n", 17)))
+# 
+# ggplot(p1, aes(x = t, y = y, group = het, color = het, fill = het)) +
+#   geom_line(size = 0.7) +
+#   stat_function(fun = fg, args = list(i = pk), color = "black", size = 0.7) +
+#   scale_color_manual(values=c("#619CFF", "red")) +
+#   xlab(expression(italic("t"))) +
+#   ylab(expression(hat(italic(gamma)))) +
+#   theme_bw() +
+#   theme(legend.position = "none") -> p1
+# plot(p1)
 
 
 
@@ -167,50 +159,50 @@ for (i in 1:n) {
 
 
 
-# iseq <- c(1, 25, 51, 75)
+
 iseq <- c(1:n)
-es_Ni_list <- list()
-for( i in iseq){
-  print(i)
-  trail_sim %>% filter(s == i, t>=0.1, t<0.9) -> dd
-  dd[order(dd$t), ] -> dd
-  dd$N = 1:nrow(dd)
-  if(nrow(dd) > 100){
-    ind = sample(1:nrow(dd), 100, replace = F) %>% sort()
-  }else{
-    ind = 1:nrow(dd)
-  }
-  es_Ni <- c()
-  for(t in dd$t[ind]){
-    int_exp_i = 0
-    for(j in 1:n){
-      if(j != i)
-        int_exp_i = int_exp_i + int_exp_ij[[paste0(i, "->", j)]](t)
-    }
-    es_Ni <- c(es_Ni, int_exp_i)
-  }
-  es_Ni_list[[i]] = rbind(N = dd$N[ind], es_Ni = es_Ni)
-}
-save(es_Ni_list, file = "goodness_of_fit/es_Ni_case_3.rdata")
-re_i <- c()
-for(i in iseq){
-  re <- cbind(t(es_Ni_list[[i]]), i)
-  colnames(re) <- c("Number of events of senders", "Esimtated cumulative intensity", "Sender")
-  re_i <- rbind(re_i, re)
-}
-re_i %>% as.data.frame() -> re_i
-ggplot(re_i, aes(x = `Number of events of senders`, y = `Esimtated cumulative intensity`, color = `Sender`)) +
-  geom_point(size = 0.5) +
-  geom_abline(intercept = 0, slope = 1, color = "black", linetype = "dashed") +
-  labs(title = "Our's methods: sender",
-       x = "Number of events of senders",
-       y = "Estimated cumulative intensity") +
-  theme_minimal() -> p1
-plot(p1)
-#
-#
-#
-# plot(seq(0.1, 0.9, 0.05), sapply(seq(0.1,0.9,0.05), fs, i=1))
+# es_Ni_list <- list()
+# for( i in iseq){
+#   print(i)
+#   trail_sim %>% filter(s == i, t>=0.1, t<0.9) -> dd
+#   dd[order(dd$t), ] -> dd
+#   dd$N = 1:nrow(dd)
+#   if(nrow(dd) > 200){
+#     ind = sample(1:nrow(dd), 200, replace = F) %>% sort()
+#   }else{
+#     ind = 1:nrow(dd)
+#   }
+#   es_Ni <- c()
+#   for(t in dd$t){
+#     int_exp_i = 0
+#     for(j in 1:n){
+#       if(j != i)
+#         int_exp_i = int_exp_i + int_exp_ij[[paste0(i, "->", j)]](t)
+#     }
+#     es_Ni <- c(es_Ni, int_exp_i)
+#   }
+#   es_Ni_list[[i]] = rbind(N = dd$N, es_Ni = es_Ni)
+# }
+# save(es_Ni_list, file = "simu_results/goodness_of_fit/es_Ni_case_2.rdata")
+# re_i <- c()
+# for(i in c(1, 25, 51)){
+#   re <- cbind(t(es_Ni_list[[i]]), i)
+#   colnames(re) <- c("Number of events of senders", "Esimtated cumulative intensity", "Sender")
+#   re_i <- rbind(re_i, re)
+# }
+# re_i %>% as.data.frame() -> re_i
+# ggplot(re_i, aes(x = `Number of events of senders`, y = `Esimtated cumulative intensity`, color = `Sender`)) +
+#   geom_point(size = 0.5) +
+#   geom_abline(intercept = 0, slope = 1, color = "black", linetype = "dashed") +
+#   labs(title = "Our's methods: sender",
+#        x = "Number of events of senders",
+#        y = "Estimated cumulative intensity") +
+#   theme_minimal() -> p1
+# plot(p1)
+# 
+# 
+# 
+# plot(seq(0.1, 0.9, 0.05), sapply(seq(0.1,0.9,0.05), fg, i=1))
 # points(seq(0.1, 0.9, 0.05), xkk[2*n, ], col = "blue")
 # points(seq(0.1, 0.9, 0.05), xkk[2*n+2, ], col = "green")
 
@@ -221,13 +213,13 @@ for( j in iseq){
   trail_sim %>% filter(r == j, t>=0.1, t<0.9) -> dd
   dd[order(dd$t), ] -> dd
   dd$N = 1:nrow(dd)
-  if(nrow(dd) > 100){
-    ind = sample(1:nrow(dd), 100, replace = F) %>% sort()
+  if(nrow(dd) > 200){
+    ind = sample(1:nrow(dd), 200, replace = F) %>% sort()
   }else{
     ind = 1:nrow(dd)
   }
   es_Nj <- c()
-  for(t in dd$t[ind]){
+  for(t in dd$t){
     int_exp_j = 0
     for(i in 1:n){
       if(i != j )
@@ -235,9 +227,9 @@ for( j in iseq){
     }
     es_Nj <- c(es_Nj, int_exp_j)
   }
-  es_Nj_list[[j]] = rbind(N = dd$N[ind], es_Nj = es_Nj)
+  es_Nj_list[[j]] = rbind(N = dd$N, es_Nj = es_Nj)
 }
-save(es_Nj_list, file = "goodness_of_fit/es_Nj_case_3.rdata")
+save(es_Nj_list, file = "simu_results/goodness_of_fit/es_Nj_case_2.rdata")
 
 ##################
 # Homo
@@ -251,7 +243,8 @@ for (pk in 1:(p + 1)) {
     }
   })
 }
-# homo_hat[[1]] <- homo_hat[[2]]  <-  function(s){return(as.numeric(s-0.5))}
+# homo_hat[[1]] <- homo_hat[[2]] <- homo_hat[[3]] <-  function(s){fg(s, 1)}
+# homo_hat[[4]] <- function(s){0}
 
 int_exp_ij_homo <- exp_ij_homo <- zij_list <- gs_list <- list()
 for (i in 1:n) {
@@ -293,46 +286,46 @@ for (i in 1:n) {
   }
 }
 
-es_Ni_homo_list <- list()
-
-for( i in iseq){
-  print(i)
-  trail_sim %>% filter(s == i, t>=0.1, t<0.9) -> dd
-  dd[order(dd$t), ] -> dd
-  dd$N = 1:nrow(dd)
-  if(nrow(dd) > 100){
-    ind = sample(1:nrow(dd), 100, replace = F) %>% sort()
-  }else{
-    ind = 1:nrow(dd)
-  }
-  es_Ni_homo <- c()
-  for(t in dd$t[ind]){
-    int_exp_i_homo = 0
-    for(j in 1:n){
-      if(j !=i )
-        int_exp_i_homo = int_exp_i_homo + int_exp_ij_homo[[paste0(i, "->", j)]](t)
-    }
-    es_Ni_homo <- c(es_Ni_homo, int_exp_i_homo)
-  }
-  es_Ni_homo_list[[i]] = rbind(N = dd$N[ind], es_Ni_homo = es_Ni_homo)
-}
-save(es_Ni_homo_list, file = "goodness_of_fit/homo_es_Ni_case_3.rdata")
+# es_Ni_homo_list <- list()
 # 
-re_i <- c()
-for(i in iseq){
-  re <- cbind(t(es_Ni_homo_list[[i]]), i)
-  colnames(re) <- c("Number of events of senders", "Esimtated cumulative intensity", "Sender")
-  re_i <- rbind(re_i, re)
-}
-re_i %>% as.data.frame() -> re_i
-ggplot(re_i, aes(x = `Number of events of senders`, y = `Esimtated cumulative intensity`, color = `Sender`)) +
-  geom_point(size = 0.5) +
-  geom_abline(intercept = 0, slope = 1, color = "black", linetype = "dashed") +
-  labs(title = "K's methods: sender",
-       x = "Number of events of senders",
-       y = "Estimated cumulative intensity") +
-  theme_minimal() -> p1
-plot(p1)
+# for( i in iseq){
+#   print(i)
+#   trail_sim %>% filter(s == i, t>=0.1, t<0.9) -> dd
+#   dd[order(dd$t), ] -> dd
+#   dd$N = 1:nrow(dd)
+#   if(nrow(dd) > 200){
+#     ind = sample(1:nrow(dd), 200, replace = F) %>% sort()
+#   }else{
+#     ind = 1:nrow(dd)
+#   }
+#   es_Ni_homo <- c()
+#   for(t in dd$t){
+#     int_exp_i_homo = 0
+#     for(j in 1:n){
+#       if(j !=i )
+#         int_exp_i_homo = int_exp_i_homo + int_exp_ij_homo[[paste0(i, "->", j)]](t)
+#     }
+#     es_Ni_homo <- c(es_Ni_homo, int_exp_i_homo)
+#   }
+#   es_Ni_homo_list[[i]] = rbind(N = dd$N, es_Ni_homo = es_Ni_homo)
+# }
+# save(es_Ni_homo_list, file = "simu_results/goodness_of_fit/homo_es_Ni_case_2.rdata")
+
+# re_i <- c()
+# for(i in iseq){
+#   re <- cbind(t(es_Ni_homo_list[[i]]), i)
+#   colnames(re) <- c("Number of events of senders", "Esimtated cumulative intensity", "Sender")
+#   re_i <- rbind(re_i, re)
+# }
+# re_i %>% as.data.frame() -> re_i
+# ggplot(re_i, aes(x = `Number of events of senders`, y = `Esimtated cumulative intensity`, color = `Sender`)) +
+#   geom_point(size = 0.5) +
+#   geom_abline(intercept = 0, slope = 1, color = "black", linetype = "dashed") +
+#   labs(title = "K's methods: sender",
+#        x = "Number of events of senders",
+#        y = "Estimated cumulative intensity") +
+#   theme_minimal() -> p1
+# plot(p1)
 # plot(seq(0.1, 0.9, 0.05), sapply(seq(0.1,0.9,0.05), fg, i=1))
 # points(seq(0.1, 0.9, 0.05), xkkHomo[1, ], col = "blue")
 # points(seq(0.1, 0.9, 0.05), xkkHomo[2, ], col = "red")
@@ -345,13 +338,13 @@ for( j in iseq){
   trail_sim %>% filter(r == j, t>=0.1, t<0.9) -> dd
   dd[order(dd$t), ] -> dd
   dd$N = 1:nrow(dd)
-  if(nrow(dd) > 100){
-    ind = sample(1:nrow(dd), 100, replace = F) %>% sort()
+  if(nrow(dd) > 200){
+    ind = sample(1:nrow(dd), 200, replace = F) %>% sort()
   }else{
     ind = 1:nrow(dd)
   }
   es_Nj_homo <- c()
-  for(t in dd$t[ind]){
+  for(t in dd$t){
     int_exp_j_homo = 0
     for(i in 1:n){
       if(i != j )
@@ -359,6 +352,6 @@ for( j in iseq){
     }
     es_Nj_homo <- c(es_Nj_homo, int_exp_j_homo)
   }
-  es_Nj_homo_list[[j]] = rbind(N = dd$N[ind], es_Nj_homo = es_Nj_homo)
+  es_Nj_homo_list[[j]] = rbind(N = dd$N, es_Nj_homo = es_Nj_homo)
 }
-save(es_Nj_homo_list, file = "goodness_of_fit/homo_es_Nj_case_3.rdata")
+save(es_Nj_homo_list, file = "simu_results/goodness_of_fit/homo_es_Nj_case_2.rdata")

@@ -4,11 +4,11 @@ library(Rcpp)
 library(matrixcalc)
 
 # setwd("C:/Users/micha/Downloads/dynamic_network")
-sourceCpp(file = "NT_test.cpp")
-sourceCpp(file = "NT_ini.cpp")
-sourceCpp(file = "CI.cpp")
-sourceCpp(file = "CI_alt.cpp")
-sourceCpp(file = "NT_homo.cpp")
+sourceCpp(file = "cpp/NT_test.cpp")
+sourceCpp(file = "cpp/NT_ini.cpp")
+sourceCpp(file = "cpp/CI.cpp")
+sourceCpp(file = "cpp/CI_alt.cpp")
+sourceCpp(file = "cpp/NT_homo.cpp")
 
 load(file = "proxyData.rda")
 

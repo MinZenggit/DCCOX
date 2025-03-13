@@ -1,29 +1,30 @@
 rm(list = ls())
-# 补充一下n = 600
+# 补充一下n = 60
 library(matrixcalc)
 library(Rcpp)
 library(RcppEigen)
 library(ggplot2)
+# Sys.setenv("PKG_CPPFLAGS" = "-march=native")
 
-sourceCpp(file = "NT.cpp", verbose = TRUE, rebuild = TRUE)
+sourceCpp(file = "cpp/MatrixSolverC.cpp", verbose = TRUE, rebuild = TRUE)
+sourceCpp(file = "cpp/NT.cpp", verbose = TRUE, rebuild = TRUE)
 # Newton NewtonMC
-sourceCpp(file = "NT_test.cpp", verbose = TRUE, rebuild = TRUE)
-sourceCpp(file = "SimSet.cpp", verbose = TRUE, rebuild = TRUE)
-# sourceCpp(file = "SimSetHt.cpp", verbose = TRUE, rebuild = TRUE)
-# sourceCpp(file = "Nij.cpp", verbose = TRUE, rebuild = TRUE)
-sourceCpp(file = "CI.cpp", verbose = TRUE, rebuild = TRUE)
+sourceCpp(file = "cpp/NT_homo.cpp", verbose = TRUE, rebuild = TRUE)
+sourceCpp(file = "cpp/SimSet.cpp", verbose = TRUE, rebuild = TRUE)
+sourceCpp(file = "cpp/SimSetHt.cpp", verbose = TRUE, rebuild = TRUE)
+sourceCpp(file = "cpp/Nij.cpp", verbose = TRUE, rebuild = TRUE)
+sourceCpp(file = "cpp/CI.cpp", verbose = TRUE, rebuild = TRUE)
 
 
 
-n = 100
+starttime <- Sys.time()
 set.seed(100)
 Total_cont = 1000 # total repeats
 p = 2 # covariates dimention
 
-for(ini in c(0, -1, 2, 5)){
-  starttime <- Sys.time()
-  cat(paste0("simu_ini_change/re_ini=", ini, "\n"))
-  folder_name <- paste0("simu_ini_change/re_ini=", ini)
+for(n in c(60, 100, 200, 500)){
+  cat(paste0("simu_results/simuresult_Tab1-4_Fig2/re_n=", n, "\n"))
+  folder_name <- paste0("simu_results/simuresult_Tab1-4_Fig2/re_n=", n)
   if (!dir.exists(folder_name)) {
     dir.create(folder_name)
     cat("文件夹已创建：", folder_name, "\n")
@@ -66,7 +67,7 @@ for(ini in c(0, -1, 2, 5)){
   nnn = 0
   cat("\n cont: ")
   while (cont <= Total_cont) {
-    cat(cont, "..")
+    
     # Generate
     
     zij = array(rnorm(n*n*p), c(n,n,p))
@@ -94,18 +95,15 @@ for(ini in c(0, -1, 2, 5)){
     
     xkk = matrix(rep(0, 2*n + p - 1)) # for all parameters
     # xkk2 = matrix(rep(0, p+1))
+    cat(cont, ", ")
     # cat("\n cont: ", cont, " : t = ")
-    tt=seq(0.1,0.9,0.05);
-    for (kk in 1: length(tt)) {
-      t=tt[kk];
-      # cat(cont, "-", t, "...", "\n")
+    for (t in seq(0.1,0.9,0.05)) {
+      # cat(t, ", ")
       
       h1 = 0.1*n^(-0.1)
       h2 = 0.015*n^(-0.2)
       
-      xk0 = X_true[, kk] + ini
-      
-      xk1 = NewtonMC_test(as.matrix(trail_sim), zij, xk0, t, h1, h2, n, nn, p)
+      xk1 = NewtonMC(as.matrix(trail_sim), zij, t, h1, h2, n, nn, p)
       # xk2 = NewtonMCHomo(as.matrix(trail_sim), zij_new, t, h2, n, nn, p+1)
       
       xkk = cbind(xkk, matrix(xk1))
@@ -170,7 +168,7 @@ for(ini in c(0, -1, 2, 5)){
   colnames(CIs) <- c("t=0.4", "t=0.6", "6=0.8", "t=0.4", "t=0.6", "6=0.8")
   rownames(CIs) <- c("alpha_1", "alpha_n/2+1", "beta_1", "beta_n/2+1", "gamma1")
   
-  save(CIs, file = paste0("simu_ini_change/re_ini=", ini, "/CIs.rdata"))
+  save(CIs, file = paste0("simu_results/simuresult_Tab1-4_Fig2/re_n=", n, "/CIs.rdata"))
   
   
   # MISE for Table 1--------------------------------------------------------------------
@@ -220,7 +218,7 @@ for(ini in c(0, -1, 2, 5)){
   names(MISEs) = c("alpha_1", "alpha_n/2+1", "beta_1", "beta_n/2+1", "gamma1")
   MISEs
   
-  save(MISEs, file = paste0("simu_ini_change/re_ini=", ini, "/MISES.rdata"))
+  save(MISEs, file = paste0("simu_results/simuresult_Tab1-4_Fig2/re_n=", n, "/MISES.rdata"))
   
   
   
@@ -254,7 +252,7 @@ for(ini in c(0, -1, 2, 5)){
   
   
   # confidence band
-  pdf(paste0("simu_ini_change/re_ini=", ini, "/alpha1.pdf"))
+  pdf(paste0("simu_results/simuresult_Tab1-4_Fig2/re_n=", n, "/alpha1.pdf"))
   ggplot(p1, aes(x = t, y = y)) +
     geom_line(color = "red") +
     stat_function(fun = fs, args = list(i = pk), color = "black") + 
@@ -271,7 +269,7 @@ for(ini in c(0, -1, 2, 5)){
                   y = xkk_sum[pk+n,],
                   yl = xl[pk+n,],
                   yu = xu[pk+n,])
-  pdf(paste0("simu_ini_change/re_ini=", ini, "/beta1.pdf"))
+  pdf(paste0("simu_results/simuresult_Tab1-4_Fig2/re_n=", n, "/beta1.pdf"))
   ggplot(p2, aes(x = t, y = y)) +
     geom_line(color = "red") +
     stat_function(fun = fr, args = list(i = pk), color = "black") + 
@@ -288,7 +286,7 @@ for(ini in c(0, -1, 2, 5)){
                   y = c(xkk_sum[pk,]),
                   yl = c(xl[pk,]),
                   yu = c(xu[pk,]))
-  pdf(paste0("simu_ini_change/re_ini=", ini, "/gamma1.pdf"))
+  pdf(paste0("simu_results/simuresult_Tab1-4_Fig2/re_n=", n, "/gamma1.pdf"))
   ggplot(p1, aes(x = t, y = y)) +
     geom_line(color = "red") +
     stat_function(fun = fg, args = list(i = pk), color = "black") + 
@@ -299,7 +297,8 @@ for(ini in c(0, -1, 2, 5)){
   plot(p1)
   dev.off()
   
-  endtime <- Sys.time()
-  runingtime = endtime - starttime
-  write.csv(runingtime, paste0("simu_ini_change/re_ini=", ini, "/time.csv"))
 }
+
+endtime <- Sys.time()
+
+print(endtime - starttime)

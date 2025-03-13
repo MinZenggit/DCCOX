@@ -19,8 +19,8 @@ h2_set <- h2_set_c*n^(-0.2)
 library(matrixcalc)
 library(Rcpp)
 library(RcppEigen)
-sourceCpp(file = "NT_cv.cpp", verbose = TRUE, rebuild = TRUE)
-sourceCpp(file = "SimSet.cpp", verbose = TRUE, rebuild = TRUE)
+sourceCpp(file = "cpp/NT_cv.cpp", verbose = TRUE, rebuild = TRUE)
+sourceCpp(file = "cpp/SimSet.cpp", verbose = TRUE, rebuild = TRUE)
 
 # 4 groups
 t = 0
@@ -217,6 +217,6 @@ colnames(PE_m) =paste0("h2=", round(h2_set_c, 33))
 my_colors <- colorRampPalette(c("blue", "red"))(256)
 heatmap(PE_m, main="PE with different h1 and h2", col=my_colors, scale="column", Rowv=NA, Colv=NA)
 # print(MISEs)
-write.csv(PE_m, file = paste0("simu_CV/n=", n, ".csv"))
+write.csv(PE_m, file = paste0("simu_results/simu_CV/n=", n, ".csv"))
 
 
