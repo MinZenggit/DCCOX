@@ -1,0 +1,901 @@
+---
+title: "Revision report"
+author: 'M'
+date: "2025-03-13"
+output:
+  html_document:
+    highlight: tango
+    theme: readable
+    toc: yes
+    toc_float: 
+      collapsed: false
+      smooth_scroll: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = F)
+library(dplyr)
+library(ggplot2)
+library(reshape2)
+```
+```{r echo=F}
+ci_tidy <- function(CIs){
+  cbind(paste0(format(CIs[, 1] * 100, nsmall = 1), " (", format(CIs[, 4], nsmall = 1), ")"),
+        paste0(format(CIs[, 2] * 100, nsmall = 1), " (", format(CIs[, 5], nsmall = 1), ")"),
+        paste0(format(CIs[, 3] * 100, nsmall = 1), " (", format(CIs[, 6], nsmall = 1), ")")) -> ci
+  colnames(ci) = c("t=0.4", "t=0.6", "t=0.8")
+  return(ci)
+}
+```
+
+
+
+
+# Simulations: Table 1, 2, 4 and Figure 2.
+
+## n = 60
+```{r}
+n = 60
+load(file = paste0("simuresult_Tab1-4_Fig2/re_n=", n, "/MISES.rdata"))
+write.csv(MISEs, file = paste0("simuresult_Tab1-4_Fig2/re_n=", n, "/MISEs.csv"))
+MISEs
+load(file = paste0("simuresult_Tab1-4_Fig2/re_n=", n, "/CIs.rdata"))
+write.csv(CIs, file = paste0("simuresult_Tab1-4_Fig2/re_n=", n, "/CIs.csv"))
+CIs
+```
+
+
+## n = 100
+```{r}
+n = 100
+load(file = paste0("simuresult_Tab1-4_Fig2/re_n=", n, "/MISES.rdata"))
+write.csv(MISEs, file = paste0("simuresult_Tab1-4_Fig2/re_n=", n, "/MISEs.csv"))
+MISEs
+load(file = paste0("simuresult_Tab1-4_Fig2/re_n=", n, "/CIs.rdata"))
+write.csv(CIs, file = paste0("simuresult_Tab1-4_Fig2/re_n=", n, "/CIs.csv"))
+CIs
+```
+
+## n = 200
+```{r}
+n = 200
+load(file = paste0("simuresult_Tab1-4_Fig2/re_n=", n, "/MISES.rdata"))
+write.csv(MISEs, file = paste0("simuresult_Tab1-4_Fig2/re_n=", n, "/MISEs.csv"))
+MISEs
+load(file = paste0("simuresult_Tab1-4_Fig2/re_n=", n, "/CIs.rdata"))
+write.csv(CIs, file = paste0("simuresult_Tab1-4_Fig2/re_n=", n, "/CIs.csv"))
+CIs
+```
+
+## n = 500
+```{r}
+n = 500
+load(file = paste0("simuresult_Tab1-4_Fig2/re_n=", n, "/MISES.rdata"))
+write.csv(MISEs, file = paste0("simuresult_Tab1-4_Fig2/re_n=", n, "/MISEs.csv"))
+MISEs
+load(file = paste0("simuresult_Tab1-4_Fig2/re_n=", n, "/CIs.rdata"))
+write.csv(CIs, file = paste0("simuresult_Tab1-4_Fig2/re_n=", n, "/CIs.csv"))
+CIs
+```
+
+# Simulations: Table 3: Different initial values
+
+## Ini = 0; True
+```{r}
+ini = 0
+load(file = paste0("simu_ini_change/re_ini=", ini, "/MISES.rdata"))
+write.csv(MISEs, file = paste0("simu_ini_change/re_ini=", ini, "/MISEs.csv"))
+MISEs
+```
+```{r}
+load(file = paste0("simu_ini_change/re_ini=", ini, "/CIs.rdata"))
+write.csv(CIs, file = paste0("simu_ini_change/re_ini=", ini, "/CIs.csv"))
+CIs
+```
+```{r}
+Runningtime = read.csv(file = paste0("simu_ini_change/re_ini=", ini, "/time.csv"))
+Runningtime
+```
+
+## Ini = -1
+```{r}
+ini = -1
+load(file = paste0("simu_ini_change/re_ini=", ini, "/MISES.rdata"))
+write.csv(MISEs, file = paste0("simu_ini_change/re_ini=", ini, "/MISEs.csv"))
+MISEs
+```
+```{r}
+load(file = paste0("simu_ini_change/re_ini=", ini, "/CIs.rdata"))
+write.csv(CIs, file = paste0("simu_ini_change/re_ini=", ini, "/CIs.csv"))
+CIs
+```
+```{r}
+Runningtime = read.csv(file = paste0("simu_ini_change/re_ini=", ini, "/time.csv"))
+Runningtime
+```
+
+## Ini = 2
+```{r}
+ini = 2
+load(file = paste0("simu_ini_change/re_ini=", ini, "/MISES.rdata"))
+write.csv(MISEs, file = paste0("simu_ini_change/re_ini=", ini, "/MISEs.csv"))
+MISEs
+```
+```{r}
+load(file = paste0("simu_ini_change/re_ini=", ini, "/CIs.rdata"))
+write.csv(CIs, file = paste0("simu_ini_change/re_ini=", ini, "/CIs.csv"))
+CIs
+```
+```{r}
+Runningtime = read.csv(file = paste0("simu_ini_change/re_ini=", ini, "/time.csv"))
+Runningtime
+```
+
+## Ini = 5
+```{r}
+ini = 5
+load(file = paste0("simu_ini_change/re_ini=", ini, "/MISES.rdata"))
+write.csv(MISEs, file = paste0("simu_ini_change/re_ini=", ini, "/MISEs.csv"))
+MISEs
+```
+```{r}
+load(file = paste0("simu_ini_change/re_ini=", ini, "/CIs.rdata"))
+write.csv(CIs, file = paste0("simu_ini_change/re_ini=", ini, "/CIs.csv"))
+CIs
+```
+```{r}
+Runningtime = read.csv(file = paste0("simu_ini_change/re_ini=", ini, "/time.csv"))
+Runningtime
+```
+
+
+# Simulations: Figure 3: Bias of K'th method
+```{r echo=FALSE}
+knitr::include_graphics(paste0("simu_fig3/b=0.pdf"))
+knitr::include_graphics(paste0("simu_fig3/b=0.33.pdf"))
+knitr::include_graphics(paste0("simu_fig3/b=0.5.pdf"))
+knitr::include_graphics(paste0("simu_fig3/b=1.pdf"))
+```
+
+# Simulations: Z dependent
+
+## rho = 0.2
+```{r}
+rho = 0.2
+knitr::include_graphics(paste0("simu_z_dependent/re_n=100rho=", rho, "/alpha1.pdf"))
+knitr::include_graphics(paste0("simu_z_dependent/re_n=100rho=", rho, "/beta1.pdf"))
+knitr::include_graphics(paste0("simu_z_dependent/re_n=100rho=", rho, "/gamma1.pdf"))
+knitr::include_graphics(paste0("simu_z_dependent/re_n=100rho=", rho, "/gamma2.pdf"))
+```
+
+## rho = 0.4
+```{r}
+rho = 0.4
+knitr::include_graphics(paste0("simu_z_dependent/re_n=100rho=", rho, "/alpha1.pdf"))
+knitr::include_graphics(paste0("simu_z_dependent/re_n=100rho=", rho, "/beta1.pdf"))
+knitr::include_graphics(paste0("simu_z_dependent/re_n=100rho=", rho, "/gamma1.pdf"))
+knitr::include_graphics(paste0("simu_z_dependent/re_n=100rho=", rho, "/gamma2.pdf"))
+```
+
+## rho = 0.6
+```{r}
+rho = 0.6
+knitr::include_graphics(paste0("simu_z_dependent/re_n=100rho=", rho, "/alpha1.pdf"))
+knitr::include_graphics(paste0("simu_z_dependent/re_n=100rho=", rho, "/beta1.pdf"))
+knitr::include_graphics(paste0("simu_z_dependent/re_n=100rho=", rho, "/gamma1.pdf"))
+knitr::include_graphics(paste0("simu_z_dependent/re_n=100rho=", rho, "/gamma2.pdf"))
+```
+
+## rho = 0.8
+```{r}
+rho = 0.8
+knitr::include_graphics(paste0("simu_z_dependent/re_n=100rho=", rho, "/alpha1.pdf"))
+knitr::include_graphics(paste0("simu_z_dependent/re_n=100rho=", rho, "/beta1.pdf"))
+knitr::include_graphics(paste0("simu_z_dependent/re_n=100rho=", rho, "/gamma1.pdf"))
+knitr::include_graphics(paste0("simu_z_dependent/re_n=100rho=", rho, "/gamma2.pdf"))
+```
+
+
+# Simulation: Goodness of fit Case 1
+
+## Our's method ( effect)
+```{r echo=F}
+load("goodness_of_fit/es_Ni_case_1.rdata")
+load("goodness_of_fit/es_Nj_case_1.rdata")
+iseq <- c(1:100)
+re_i <- c()
+for(i in iseq){
+  re <- cbind(t(es_Ni_list[[i]]), i)
+  colnames(re) <- c("Number of events of senders", "Esimtated cumulative intensity", "Sender")
+  re_i <- rbind(re_i, re)
+}
+re_i %>% as.data.frame() -> re_i
+# re_i$Sender %>% as.factor() -> re_i$Sender
+
+ 
+re_j <- c()
+for(j in iseq){
+  re <- cbind(t(es_Nj_list[[j]]), j)
+  colnames(re) <- c("Number of events of receivers", "Esimtated cumulative intensity", "Receiver")
+  re_j <- rbind(re_j, re)
+}
+re_j %>% as.data.frame() -> re_j
+# re_j$Receiver %>% as.factor() -> re_j$Receiver
+
+```
+
+```{r echo=F}
+ggplot(re_i, aes(x = `Number of events of senders`, y = `Esimtated cumulative intensity`, color = `Sender`)) +
+  geom_point(size = 0.5) +
+  geom_abline(intercept = 0, slope = 1, color = "black", linetype = "dashed") + 
+  labs(title = "Our methods: sender",
+       x = "Number of events of senders",
+       y = "Estimated cumulative intensity") +
+  theme_minimal()
+```
+```{r echo=F}
+ggplot(re_j, aes(x = `Number of events of receivers`, y = `Esimtated cumulative intensity`, color = `Receiver`)) +
+  geom_point(size = 0.5) +
+  geom_abline(intercept = 0, slope = 1, color = "black", linetype = "dashed") + 
+  labs(title = "Our methods: receiver",
+       x = "Number of events of receivers",
+       y = "Estimated cumulative intensity") +
+  theme_minimal()
+```
+
+
+
+## K's method (homo effect)
+
+```{r echo=F}
+load("goodness_of_fit/homo_es_Ni_case_1.rdata")
+load("goodness_of_fit/homo_es_Nj_case_1.rdata")
+re_i <- c()
+for(i in iseq){
+  re <- cbind(t(es_Ni_homo_list[[i]]), i)
+  colnames(re) <- c("Number of events of senders", "Esimtated cumulative intensity", "Sender")
+  re_i <- rbind(re_i, re)
+}
+re_i %>% as.data.frame() -> re_i
+# re_i$Sender %>% as.factor() -> re_i$Sender
+
+re_j <- c()
+for(j in iseq){
+  re <- cbind(t(es_Nj_homo_list[[j]]), j)
+  colnames(re) <- c("Number of events of receivers", "Esimtated cumulative intensity", "Receiver")
+  re_j <- rbind(re_j, re)
+}
+re_j %>% as.data.frame() -> re_j
+# re_j$Receiver %>% as.factor() -> re_j$Receiver
+
+```
+
+```{r echo=F}
+ggplot(re_i, aes(x = `Number of events of senders`, y = `Esimtated cumulative intensity`, color = `Sender`)) +
+  geom_point(size = 0.5) +
+  geom_abline(intercept = 0, slope = 1, color = "black", linetype = "dashed") + 
+  labs(title = "K's methods: sender",
+       x = "Number of events of senders",
+       y = "Estimated cumulative intensity") +
+  theme_minimal()
+```
+```{r echo=F}
+ggplot(re_j, aes(x = `Number of events of receivers`, y = `Esimtated cumulative intensity`, color = `Receiver`)) +
+  geom_point(size = 0.5) +
+  geom_abline(intercept = 0, slope = 1, color = "black", linetype = "dashed") + 
+  labs(title = "K's methods: receiver",
+       x = "Number of events of receivers",
+       y = "Estimated cumulative intensity") +
+  theme_minimal() 
+```
+
+
+# Simulation: Goodness of fit Case 2
+
+## Our's method ( effect)
+```{r echo=F}
+load("goodness_of_fit/es_Ni_case_2.rdata")
+load("goodness_of_fit/es_Nj_case_2.rdata")
+re_i <- c()
+for(i in iseq){
+  re <- cbind(t(es_Ni_list[[i]]), i)
+  colnames(re) <- c("Number of events of senders", "Esimtated cumulative intensity", "Sender")
+  re_i <- rbind(re_i, re)
+}
+re_i %>% as.data.frame() -> re_i
+# re_i$Sender %>% as.factor() -> re_i$Sender
+
+re_j <- c()
+for(j in iseq){
+  re <- cbind(t(es_Nj_list[[j]]), j)
+  colnames(re) <- c("Number of events of receivers", "Esimtated cumulative intensity", "Receiver")
+  re_j <- rbind(re_j, re)
+}
+re_j %>% as.data.frame() -> re_j
+# re_j$Receiver %>% as.factor() -> re_j$Receiver
+
+```
+
+```{r echo=F}
+ggplot(re_i, aes(x = `Number of events of senders`, y = `Esimtated cumulative intensity`, color = `Sender`)) +
+  geom_point(size = 0.5) +
+  geom_abline(intercept = 0, slope = 1, color = "black", linetype = "dashed") + 
+  labs(title = "Our methods: sender",
+       x = "Number of events of senders",
+       y = "Estimated cumulative intensity") +
+  theme_minimal()
+```
+```{r echo=F}
+ggplot(re_j, aes(x = `Number of events of receivers`, y = `Esimtated cumulative intensity`, color = `Receiver`)) +
+  geom_point(size = 0.5) +
+  geom_abline(intercept = 0, slope = 1, color = "black", linetype = "dashed") + 
+  labs(title = "Our methods: receiver",
+       x = "Number of events of receivers",
+       y = "Estimated cumulative intensity") +
+  theme_minimal()
+```
+
+
+
+## K's method (homo effect)
+
+```{r echo=F}
+load("goodness_of_fit/homo_es_Ni_case_2.rdata")
+load("goodness_of_fit/homo_es_Nj_case_2.rdata")
+re_i <- c()
+for(i in iseq){
+  re <- cbind(t(es_Ni_homo_list[[i]]), i)
+  colnames(re) <- c("Number of events of senders", "Esimtated cumulative intensity", "Sender")
+  re_i <- rbind(re_i, re)
+}
+re_i %>% as.data.frame() -> re_i
+# re_i$Sender %>% as.factor() -> re_i$Sender
+
+re_j <- c()
+for(j in iseq){
+  re <- cbind(t(es_Nj_homo_list[[j]]), j)
+  colnames(re) <- c("Number of events of receivers", "Esimtated cumulative intensity", "Receiver")
+  re_j <- rbind(re_j, re)
+}
+re_j %>% as.data.frame() -> re_j
+# re_j$Receiver %>% as.factor() -> re_j$Receiver
+
+```
+
+```{r echo=F}
+ggplot(re_i, aes(x = `Number of events of senders`, y = `Esimtated cumulative intensity`, color = `Sender`)) +
+  geom_point(size = 0.5) +
+  geom_abline(intercept = 0, slope = 1, color = "black", linetype = "dashed") + 
+  labs(title = "K's methods: sender",
+       x = "Number of events of senders",
+       y = "Estimated cumulative intensity") +
+  theme_minimal()
+```
+```{r echo=F}
+ggplot(re_j, aes(x = `Number of events of receivers`, y = `Esimtated cumulative intensity`, color = `Receiver`)) +
+  geom_point(size = 0.5) +
+  geom_abline(intercept = 0, slope = 1, color = "black", linetype = "dashed") + 
+  labs(title = "K's methods: receiver",
+       x = "Number of events of receivers",
+       y = "Estimated cumulative intensity") +
+  theme_minimal() 
+```
+
+
+
+
+
+
+
+# Simulation: Goodness of fit Case 3
+
+## Our's method ( effect)
+```{r echo=F}
+load("goodness_of_fit/es_Ni_case_3.rdata")
+load("goodness_of_fit/es_Nj_case_3.rdata")
+re_i <- c()
+for(i in iseq){
+  re <- cbind(t(es_Ni_list[[i]]), i)
+  colnames(re) <- c("Number of events of senders", "Esimtated cumulative intensity", "Sender")
+  re_i <- rbind(re_i, re)
+}
+re_i %>% as.data.frame() -> re_i
+# re_i$Sender %>% as.factor() -> re_i$Sender
+
+re_j <- c()
+for(j in iseq){
+  re <- cbind(t(es_Nj_list[[j]]), j)
+  colnames(re) <- c("Number of events of receivers", "Esimtated cumulative intensity", "Receiver")
+  re_j <- rbind(re_j, re)
+}
+re_j %>% as.data.frame() -> re_j
+# re_j$Receiver %>% as.factor() -> re_j$Receiver
+
+```
+
+```{r echo=F}
+ggplot(re_i, aes(x = `Number of events of senders`, y = `Esimtated cumulative intensity`, color = `Sender`)) +
+  geom_point(size = 0.5) +
+  geom_abline(intercept = 0, slope = 1, color = "black", linetype = "dashed") + 
+  labs(title = "Our methods: sender",
+       x = "Number of events of senders",
+       y = "Estimated cumulative intensity") +
+  theme_minimal()
+```
+```{r echo=F}
+ggplot(re_j, aes(x = `Number of events of receivers`, y = `Esimtated cumulative intensity`, color = `Receiver`)) +
+  geom_point(size = 0.5) +
+  geom_abline(intercept = 0, slope = 1, color = "black", linetype = "dashed") + 
+  labs(title = "Our methods: receiver",
+       x = "Number of events of receivers",
+       y = "Estimated cumulative intensity") +
+  theme_minimal()
+```
+
+
+
+## K's method (homo effect)
+
+```{r echo=F}
+load("goodness_of_fit/homo_es_Ni_case_3.rdata")
+load("goodness_of_fit/homo_es_Nj_case_3.rdata")
+re_i <- c()
+for(i in iseq){
+  re <- cbind(t(es_Ni_homo_list[[i]]), i)
+  colnames(re) <- c("Number of events of senders", "Esimtated cumulative intensity", "Sender")
+  re_i <- rbind(re_i, re)
+}
+re_i %>% as.data.frame() -> re_i
+# re_i$Sender %>% as.factor() -> re_i$Sender
+
+re_j <- c()
+for(j in iseq){
+  re <- cbind(t(es_Nj_homo_list[[j]]), j)
+  colnames(re) <- c("Number of events of receivers", "Esimtated cumulative intensity", "Receiver")
+  re_j <- rbind(re_j, re)
+}
+re_j %>% as.data.frame() -> re_j
+# re_j$Receiver %>% as.factor() -> re_j$Receiver
+
+```
+
+```{r echo=F}
+ggplot(re_i, aes(x = `Number of events of senders`, y = `Esimtated cumulative intensity`, color = `Sender`)) +
+  geom_point(size = 0.5) +
+  geom_abline(intercept = 0, slope = 1, color = "black", linetype = "dashed") + 
+  labs(title = "K's methods: sender",
+       x = "Number of events of senders",
+       y = "Estimated cumulative intensity") +
+  theme_minimal()
+```
+```{r echo=F}
+ggplot(re_j, aes(x = `Number of events of receivers`, y = `Esimtated cumulative intensity`, color = `Receiver`)) +
+  geom_point(size = 0.5) +
+  geom_abline(intercept = 0, slope = 1, color = "black", linetype = "dashed") + 
+  labs(title = "K's methods: receiver",
+       x = "Number of events of receivers",
+       y = "Estimated cumulative intensity") +
+  theme_minimal() 
+```
+
+
+
+
+
+
+
+
+# Simulations: Cross Validation.
+
+```{r echo=F}
+# 创建示例矩阵数据
+read.csv("simu_CV/n=100.csv", header = T) -> aa
+rownames(aa) <- aa[, 1]
+aa[, -1] -> aa
+aa %>% as.matrix() -> data_matrix
+# 转换为 data.frame
+data_long <- melt(data_matrix, varnames = c("h1", "h2"), value.name = "value")
+
+# 提取 h1 的数值部分作为横坐标
+data_long$h1_numeric <- as.numeric(gsub("h1=", "", data_long$h1))
+data_long$`h2 values` <- as.factor(gsub("h2.", "", data_long$h2))
+# 绘制折线图
+ggplot(data_long, aes(x = h1_numeric, y = value, group = `h2 values`, color = `h2 values`)) +
+  geom_line() +
+  geom_point() +
+  labs(title = paste0("PE with different bendwidth value, n = 100"),
+       x = "h1 Values",
+       y = "PE Values") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) -> p1
+p1
+```
+```{r eval = F, echo=F}
+pdf(file = "simu_CV/n=100.pdf")
+p1
+dev.off()
+```
+
+
+# MIT Analysis
+
+## Gamma estimation
+```{r echo=FALSE}
+knitr::include_graphics(paste0("mit_plots/gamma1.pdf"))
+knitr::include_graphics(paste0("mit_plots/gamma2.pdf"))
+knitr::include_graphics(paste0("mit_plots/gamma3.pdf"))
+knitr::include_graphics(paste0("mit_plots/gamma4.pdf"))
+```
+
+## Gof: Our's method ( effect)
+```{r echo=F}
+load("goodness_of_fit_mit2/es_Ni.rdata")
+load("goodness_of_fit_mit2/es_Nj.rdata")
+re_i <- c()
+for(i in c(1:63)){
+  re <- cbind(t(es_Ni_list[[i]]), i)
+  colnames(re) <- c("Number of events of senders", "Esimtated cumulative intensity", "Sender")
+  re_i <- rbind(re_i, re)
+}
+re_i %>% as.data.frame() -> re_i
+# re_i$Sender %>% as.factor() -> re_i$Sender
+
+re_j <- c()
+for(j in c(23:63)){
+  re <- cbind(t(es_Nj_list[[j]]), j)
+  colnames(re) <- c("Number of events of receivers", "Esimtated cumulative intensity", "Receiver")
+  re_j <- rbind(re_j, re)
+}
+re_j %>% as.data.frame() -> re_j
+# re_j$Receiver %>% as.factor() -> re_j$Receiver
+
+```
+
+```{r echo=F}
+ggplot(re_i, aes(x = `Number of events of senders`, y = `Esimtated cumulative intensity`, color = `Sender`)) +
+  geom_point(size = 0.5) +
+  geom_abline(intercept = 0, slope = 1, color = "black", linetype = "dashed") + 
+  labs(title = "Our methods: sender",
+       x = "Number of events of senders",
+       y = "Estimated cumulative intensity") +
+  theme_minimal() -> p1
+p1
+```
+
+
+```{r echo=F, eval=F}
+pdf(file = "goodness_of_fit_mit2/Our_sender.pdf")
+plot(p1)
+dev.off()
+```
+```{r echo=F}
+ggplot(re_j, aes(x = `Number of events of receivers`, y = `Esimtated cumulative intensity`, color = `Receiver`)) +
+  geom_point(size = 0.5) +
+  geom_abline(intercept = 0, slope = 1, color = "black", linetype = "dashed") + 
+  labs(title = "Our methods: receiver",
+       x = "Number of events of receivers",
+       y = "Estimated cumulative intensity") +
+  theme_minimal() -> p2
+p2
+```
+
+```{r echo=F, eval=F}
+pdf(file = "goodness_of_fit_mit2/Our_receiver.pdf")
+plot(p2)
+dev.off()
+```
+
+
+## Gof: K's method (homo effect)
+
+```{r echo=F}
+load("goodness_of_fit_mit2/homo_es_Ni.rdata")
+load("goodness_of_fit_mit2/homo_es_Nj.rdata")
+re_i <- c()
+for(i in c(1:63)){
+  re <- cbind(t(es_Ni_homo_list[[i]]), i)
+  colnames(re) <- c("Number of events of senders", "Esimtated cumulative intensity", "Sender")
+  re_i <- rbind(re_i, re)
+}
+re_i %>% as.data.frame() -> re_i
+# re_i$Sender %>% as.factor() -> re_i$Sender
+
+re_j <- c()
+for(j in c(23:63)){
+  re <- cbind(t(es_Nj_homo_list[[j]]), j)
+  colnames(re) <- c("Number of events of receivers", "Esimtated cumulative intensity", "Receiver")
+  re_j <- rbind(re_j, re)
+}
+re_j %>% as.data.frame() -> re_j
+# re_j$Receiver %>% as.factor() -> re_j$Receiver
+
+```
+
+```{r echo=F}
+ggplot(re_i, aes(x = `Number of events of senders`, y = `Esimtated cumulative intensity`, color = `Sender`)) +
+  geom_point(size = 0.5) +
+  geom_abline(intercept = 0, slope = 1, color = "black", linetype = "dashed") + 
+  labs(title = "K's methods: sender",
+       x = "Number of events of senders",
+       y = "Estimated cumulative intensity") + 
+    ylim(c(0, 10000))+
+  xlim(c(0, 10000))+
+  theme_minimal() -> p1
+p1
+```
+```{r echo=F, eval=F}
+pdf(file = "goodness_of_fit_mit2/Homo_sender.pdf")
+plot(p1)
+dev.off()
+```
+
+```{r echo=F}
+ggplot(re_j, aes(x = `Number of events of receivers`, y = `Esimtated cumulative intensity`, color = `Receiver`)) +
+  geom_point(size = 0.5) +
+  geom_abline(intercept = 0, slope = 1, color = "black", linetype = "dashed") + 
+  labs(title = "K's methods: receiver",
+       x = "Number of events of receivers",
+       y = "Estimated cumulative intensity") +
+    ylim(c(0, 10000))+
+  xlim(c(0, 10000))+
+  theme_minimal() -> p2
+p2
+```
+```{r echo=F, eval=F}
+pdf(file = "goodness_of_fit_mit2/Homo_receiver.pdf")
+plot(p2)
+dev.off()
+```
+
+
+
+
+
+# Bike Analysis
+
+## Alpha Beta estimation
+```{r echo=F}
+load(file = "bikedata/xkk0.0437599061077816_1.rdata")
+load(file = "bikedata/xkkCI0.0437599061077816_1.rdata")
+load(file = "bikedata/xkkHomo0.0437599061077816_1.rdata")
+ftrans = function(t) {
+  return(as.Date("20180501", format = "%Y%m%d") + (as.Date("20180531", format = "%Y%m%d") - as.Date("20180501", format = "%Y%m%d")) * t)
+}
+n = 417
+ave1 = colSums(xkk[1:n,])/n
+ave2 = colSums(xkk[(n+1):(2*n-1),])/(n-1)
+for(pk in c(1, 101, 201, 301, 401)){
+# ALPHA
+p1 = data.frame(t1 = seq(0.1,0.9,0.01) %>% ftrans(), 
+                t2 = seq(0.1, 0.9, 0.01), 
+                y = xkk[pk,] - ave1,
+                yl = xkk[pk,] - ave1 - 1.96*xkkCI[pk,],
+                yu = xkk[pk,] - ave1 + 1.96*xkkCI[pk,])
+
+# BETA
+p2 = data.frame(t1 = seq(0.1,0.9,0.01) %>% ftrans(), 
+                t2 = seq(0.1, 0.9, 0.01),  
+                y = xkk[pk+n,] - ave2,
+                yl = xkk[pk+n,] - ave2 - 1.96*xkkCI[pk,],
+                yu = xkk[pk+n,] - ave2 + 1.96*xkkCI[pk,])
+
+# 1a
+ggplot(p1, aes(x = t2, y = y)) +
+  geom_line(color = "red", size = 0.75) +
+  geom_ribbon(aes(ymin = yl, ymax = yu), alpha = 0, color = "red", linetype = "dashed", size = 0.75) +  # 添加fill颜色映射
+  scale_x_continuous(
+    breaks = seq(0.1, 0.9, by = 0.2),  # 调整间隔为每0.2显示一个标签
+    labels = function(t) {
+      format(ftrans(t), "%b %d")       # 将数值转换为日期格式
+    }
+  ) +
+  xlab(expression(italic("t"))) +
+  ylab(expression(widehat(italic(alpha))[i]^"'"~(t))) +
+  ylim(-5, 5)+
+  theme(panel.background = element_rect(fill = "white")) + 
+  theme(panel.border = element_rect(color = "black", fill = NA, size = 1)) -> f1
+plot(f1)
+
+# 1b
+ggplot(p2, aes(x = t2, y = y)) +
+  geom_line(color = "red", size = 0.75) +
+  geom_ribbon(aes(ymin = yl, ymax = yu), alpha = 0, color = "red", linetype = "dashed", size = 0.75) +# 添加fill颜色映射
+  scale_x_continuous(
+    breaks = seq(0.1, 0.9, by = 0.2),  # 调整间隔为每0.2显示一个标签
+    labels = function(t) {
+      format(ftrans(t), "%b %d")       # 将数值转换为日期格式
+    }
+  ) +
+  xlab(expression(italic("t"))) +
+  ylab(expression(widehat(italic(beta))[i]^"'"~(t))) +
+  ylim(-5, 5)+
+  theme(panel.background = element_rect(fill = "white")) + 
+  theme(panel.border = element_rect(color = "black", fill = NA, size = 1)) -> f2
+plot(f2)
+}
+```
+
+## Gamma estimation
+```{r, echo=F}
+load(file = "bikedata/xkk0.0437599061077816_1.rdata")
+load(file = "bikedata/xkkCI0.0437599061077816_1.rdata")
+load(file = "bikedata/xkkHomo0.0437599061077816_1.rdata")
+n = 417
+pp = 1
+ftrans = function(t) {
+  return(as.Date("20180501", format = "%Y%m%d") + (as.Date("20180531", format = "%Y%m%d") - as.Date("20180501", format = "%Y%m%d")) * t)
+}
+p1 = data.frame(t1 = seq(0.1,0.9,0.01) %>% ftrans(), 
+                t2 = seq(0.1,0.9,0.01),
+                y = c(xkk[2*n - 1 + pp,], xkkHomo[pp,]),
+                yl = c(xkk[2*n - 1 + pp,] - 1.96*xkkCI[2*n - 1 + pp,], xkkHomo[pp,]),
+                yu = c(xkk[2*n - 1 + pp,] + 1.96*xkkCI[2*n - 1 + pp,], xkkHomo[pp,]),
+                het = c(rep("y", 81), rep("n", 81)))
+
+# sf
+ggplot(p1, aes(x = t2, y = y, group = het, colour = het, fill = het)) +
+  geom_line() +
+  geom_ribbon(aes(ymin = yl, ymax = yu), alpha = 0, linetype = "dashed", size = 0.7) + 
+  scale_color_manual(values = c("#619CFF", "red")) +
+  scale_fill_manual(values = c("#619CFF", "red")) +  # 添加fill颜色映射
+  scale_x_continuous(
+    breaks = seq(0.1, 0.9, by = 0.2),  # 调整间隔为每0.2显示一个标签
+    labels = function(t) {
+      format(ftrans(t), "%b %d")       # 将数值转换为日期格式
+    }
+  ) +
+  xlab(expression(italic("t"))) +
+  ylab(expression(widehat(italic(gamma))[1](t))) +
+  theme(
+    panel.background = element_rect(fill = "white"),
+    panel.border = element_rect(color = "black", fill = NA, size = 1),
+    legend.position = "none"
+  )
+```
+
+
+```{r, echo=F}
+pp = 2
+p1 = data.frame(t1 = seq(0.1,0.9,0.01) %>% ftrans(), 
+                t2 = seq(0.1,0.9,0.01),
+                y = c(xkk[2*n - 1 + pp,], xkkHomo[pp,]),
+                yl = c(xkk[2*n - 1 + pp,] - 1.96*xkkCI[2*n - 1 + pp,], xkkHomo[pp,]),
+                yu = c(xkk[2*n - 1 + pp,] + 1.96*xkkCI[2*n - 1 + pp,], xkkHomo[pp,]),
+                het = c(rep("y", 81), rep("n", 81)))
+
+# sf
+ggplot(p1, aes(x = t2, y = y, group = het, colour = het, fill = het)) +
+  geom_line() +
+  geom_ribbon(aes(ymin = yl, ymax = yu), alpha = 0, linetype = "dashed", size = 0.7) + 
+  scale_color_manual(values = c("#619CFF", "red")) +
+  scale_fill_manual(values = c("#619CFF", "red")) +  # 添加fill颜色映射
+  scale_x_continuous(
+    breaks = seq(0.1, 0.9, by = 0.2),  # 调整间隔为每0.2显示一个标签
+    labels = function(t) {
+      format(ftrans(t), "%b %d")       # 将数值转换为日期格式
+    }
+  ) +
+  xlab(expression(italic("t"))) +
+  ylab(expression(widehat(italic(gamma))[2](t))) +
+  theme(
+    panel.background = element_rect(fill = "white"),
+    panel.border = element_rect(color = "black", fill = NA, size = 1),
+    legend.position = "none"
+  )
+```
+
+
+## Gof: Our's method ( effect)
+```{r echo=F}
+load("goodness_of_fit_bike/es_Ni.rdata")
+load("goodness_of_fit_bike/es_Nj.rdata")
+re_i <- c()
+for(i in iseq){
+  re <- cbind(t(es_Ni_list[[i]]), i)
+  colnames(re) <- c("Number of events of senders", "Esimtated cumulative intensity", "Sender")
+  re_i <- rbind(re_i, re)
+}
+re_i %>% as.data.frame() -> re_i
+# re_i$Sender %>% as.factor() -> re_i$Sender
+
+re_j <- c()
+for(j in iseq){
+  re <- cbind(t(es_Nj_list[[j]]), j)
+  colnames(re) <- c("Number of events of receivers", "Esimtated cumulative intensity", "Receiver")
+  re_j <- rbind(re_j, re)
+}
+re_j %>% as.data.frame() -> re_j
+# re_j$Receiver %>% as.factor() -> re_j$Receiver
+
+```
+
+```{r echo=F}
+ggplot(re_i, aes(x = `Number of events of senders`, y = `Esimtated cumulative intensity`, color = `Sender`)) +
+  geom_point(size = 0.5) +
+  geom_abline(intercept = 0, slope = 1, color = "black", linetype = "dashed") + 
+  labs(title = "Our methods: sender",
+       x = "Number of events of senders",
+       y = "Estimated cumulative intensity") +
+  theme_minimal() -> p1
+p1
+```
+```{r echo=F, eval=F}
+pdf(file = "goodness_of_fit_bike/Our_sender.pdf")
+plot(p1)
+dev.off()
+```
+
+```{r echo=F}
+ggplot(re_j, aes(x = `Number of events of receivers`, y = `Esimtated cumulative intensity`, color = `Receiver`)) +
+  geom_point(size = 0.5) +
+  geom_abline(intercept = 0, slope = 1, color = "black", linetype = "dashed") + 
+  labs(title = "Our methods: receiver",
+       x = "Number of events of receivers",
+       y = "Estimated cumulative intensity") +
+  theme_minimal() -> p2
+p2
+```
+
+```{r echo=F, eval=F}
+pdf(file = "goodness_of_fit_bike/Our_receiver.pdf")
+plot(p2)
+dev.off()
+```
+
+## Gof: K's method (homo effect)
+
+```{r echo=F}
+load("goodness_of_fit_bike/homo_es_Ni.rdata")
+load("goodness_of_fit_bike/homo_es_Nj.rdata")
+re_i <- c()
+for(i in iseq){
+  re <- cbind(t(es_Ni_homo_list[[i]]), i)
+  colnames(re) <- c("Number of events of senders", "Esimtated cumulative intensity", "Sender")
+  re_i <- rbind(re_i, re)
+}
+re_i %>% as.data.frame() -> re_i
+# re_i$Sender %>% as.factor() -> re_i$Sender
+
+re_j <- c()
+for(j in iseq){
+  re <- cbind(t(es_Nj_homo_list[[j]]), j)
+  colnames(re) <- c("Number of events of receivers", "Esimtated cumulative intensity", "Receiver")
+  re_j <- rbind(re_j, re)
+}
+re_j %>% as.data.frame() -> re_j
+# re_j$Receiver %>% as.factor() -> re_j$Receiver
+
+```
+
+```{r  echo=F}
+ggplot(re_i, aes(x = `Number of events of senders`, y = `Esimtated cumulative intensity`, color = `Sender`)) +
+  geom_point(size = 0.5) +
+  geom_abline(intercept = 0, slope = 1, color = "black", linetype = "dashed") + 
+  labs(title = "K's methods: sender",
+       x = "Number of events of senders",
+       y = "Estimated cumulative intensity") + 
+  theme_minimal() -> p1
+p1
+```
+```{r echo=F, eval=F}
+pdf(file = "goodness_of_fit_bike/Homo_sender.pdf")
+plot(p1)
+dev.off()
+```
+```{r echo=F}
+ggplot(re_j, aes(x = `Number of events of receivers`, y = `Esimtated cumulative intensity`, color = `Receiver`)) +
+  geom_point(size = 0.5) +
+  geom_abline(intercept = 0, slope = 1, color = "black", linetype = "dashed") + 
+  labs(title = "K's methods: receiver",
+       x = "Number of events of receivers",
+       y = "Estimated cumulative intensity") +
+  theme_minimal() -> p2
+p2
+```
+```{r echo=F, eval=F}
+pdf(file = "goodness_of_fit_bike/Homo_receiver.pdf")
+plot(p2)
+dev.off()
+```
+
+
