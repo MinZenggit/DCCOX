@@ -1,0 +1,1344 @@
+---
+title: "Bike further"
+author: 'Min'
+date: "2025-04-10"
+output:
+  html_document:
+    highlight: tango
+    theme: readable
+    toc: yes
+    toc_float: 
+      collapsed: false
+      smooth_scroll: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r include=F}
+rm(list = ls())
+library(leaflet)
+library(ggalluvial)
+library(patchwork)
+library(dplyr)
+library(reshape2)
+library(tidyr)
+library(lubridate)
+library(plotly)
+library(cluster)
+library(factoextra)
+library(gridExtra)
+library(tibble)
+library(reshape2)
+library(ggplot2)
+library(RColorBrewer)
+library(lme4)
+set.seed(123)
+```
+
+
+ - Describ the data
+ 
+ - Number of nodes: 542
+ 
+ - Number of total events: 3542684
+ 
+ - Time spends: 2018-04 to 2018-12
+ 
+ 
+ 
+```{r include=F}
+load(file = "bikedata/bike_data3.rdata")
+```
+
+The density of a bike station is measured in terms of the number of neighboring stations. We denote by $n(i)$ the average of:
+
+- the number of bike stations which can be reached from $i$ in less than three minutes and
+- the number of bike stations from which $i$ can be reached in less than three minutes.
+
+The feature vector is defined as:
+$$
+X_{n,ij} := 
+\begin{pmatrix}
+\log(d_{i,j} \vee 1) \\
+\log(d_{i,j} \vee 1)^2 \\
+\log(n(i) \vee 1) \\
+\log(n(j) \vee 1)
+\end{pmatrix}
+$$
+
+
+```{r include=F}
+new_stations <- as.data.frame(cbind(bike_data$new_stations, names(bike_data$new_stations)))
+colnames(new_stations) <- c("id", "start_stations_id")
+ready_dt <- bike_data$ready_dt 
+unique(ready_dt[, c("start_stations_id", "start_lat", "start_long", "Start.station")]) -> bb
+merge(bb, new_stations, by = "start_stations_id") -> bb
+# bb %>% filter(id %in% c("101", "301", "401", "501"))
+```
+
+```{r include=F}
+load(file = "~/DCCOX/bikeplots3/xkk0.0532843989577126_2.rdata")
+load(file = "~/DCCOX/bikeplots3/xkkCI0.0532843989577126_2.rdata")
+load(file = "~/DCCOX/bikeplots3/xkkHomo0.0532843989577126_2.rdata")
+xkk <- xkk[, 21:91]
+xkkCI <- xkkCI[, 21:91]
+xkkHomo <- xkkHomo[, 21:91]
+n = 542
+```
+
+## 1. The gamma estimator plots (compare with k'th methods)
+```{r echo=F, warning=F}
+tseq = seq(0.05,0.95,0.01)[c(21:91)]
+ftrans = function(t) {
+  return(as.Date("20180101", format = "%Y%m%d") + (as.Date("20181231", format = "%Y%m%d") - as.Date("20180101", format = "%Y%m%d")) * t)
+}
+t2 = tseq
+pp=1
+p1 = data.frame(t = tseq%>%ftrans(),
+                y = c(xkk[2*n - 1 + pp,], xkkHomo[pp,]),
+                yl = c(xkk[2*n - 1 + pp,] - 1.96*xkkCI[2*n - 1 + pp,], xkkHomo[pp,]),
+                yu = c(xkk[2*n - 1 + pp,] + 1.96*xkkCI[2*n - 1 + pp,], xkkHomo[pp,]),
+                het = c(rep("y", length(t2)), rep("n", length(t2))))
+
+pp=2
+p2 = data.frame(t = tseq%>%ftrans(),
+                y = c(xkk[2*n - 1 + pp,], xkkHomo[pp,]),
+                yl = c(xkk[2*n - 1 + pp,] - 1.96*xkkCI[2*n - 1 + pp,], xkkHomo[pp,]),
+                yu = c(xkk[2*n - 1 + pp,] + 1.96*xkkCI[2*n - 1 + pp,], xkkHomo[pp,]),
+                het = c(rep("y", length(t2)), rep("n", length(t2))))
+pp=3
+p3 = data.frame(t = tseq%>%ftrans(),
+                y = c(xkk[2*n - 1 + pp,], xkkHomo[pp,]),
+                yl = c(xkk[2*n - 1 + pp,] - 1.96*xkkCI[2*n - 1 + pp,], xkkHomo[pp,]),
+                yu = c(xkk[2*n - 1 + pp,] + 1.96*xkkCI[2*n - 1 + pp,], xkkHomo[pp,]),
+                het = c(rep("y", length(t2)), rep("n", length(t2))))
+
+pp=4
+p4 = data.frame(t = tseq%>%ftrans(),
+                y = c(xkk[2*n - 1 + pp,], xkkHomo[pp,]),
+                yl = c(xkk[2*n - 1 + pp,] - 1.96*xkkCI[2*n - 1 + pp,], xkkHomo[pp,]),
+                yu = c(xkk[2*n - 1 + pp,] + 1.96*xkkCI[2*n - 1 + pp,], xkkHomo[pp,]),
+                het = c(rep("y", length(t2)), rep("n", length(t2))))
+key_dates = as.Date(c("2018-05-23", "2018-09-06", "2018-11-10"))
+ggplot(p1, aes(x = t, y = y, group = het, colour = het, fill = het)) +
+  geom_line(linewidth = 0.3) +
+  geom_ribbon(aes(ymin = yl, ymax = yu), alpha = 0, linetype = "dashed", size = 0.3) +
+  geom_vline(
+    xintercept = key_dates, 
+    linetype = "dotted", 
+    color = "black", 
+    size = 0.6,
+    alpha = 0.7
+  )+
+  scale_color_manual(values=c("#619CFF", "red")) +
+  scale_x_date(date_labels = "%b %d", breaks = "6 week") +
+  xlab(expression(italic("t"))) +
+  ylab(expression(widehat(italic(gamma))[1](t))) +
+  theme(legend.position = "none") -> pp1
+plot(pp1)
+pdf(file = "bikeplots3/gamma1_hat.pdf", width = 5, height = 4.5)
+plot(pp1)
+dev.off()
+ggplot(p2, aes(x = t, y = y, group = het, colour = het, fill = het)) +
+  geom_line(linewidth = 0.3) +
+  geom_ribbon(aes(ymin = yl, ymax = yu), alpha = 0, linetype = "dashed", size = 0.3)+
+  geom_vline(
+    xintercept = key_dates, 
+    linetype = "dotted", 
+    color = "black", 
+    size = 0.6,
+    alpha = 0.7
+  ) +
+  scale_color_manual(values=c("#619CFF", "red")) +
+  xlab(expression(italic("t"))) +
+  ylab(expression(widehat(italic(gamma))[2](t))) +
+  theme(legend.position = "none") -> pp2
+plot(pp2)
+pdf(file = "bikeplots3/gamma2_hat.pdf", width = 5, height = 4.5)
+plot(pp2)
+dev.off()
+
+ggplot(p3, aes(x = t, y = y, group = het, colour = het, fill = het)) +
+  geom_line(linewidth = 0.3) +
+  geom_ribbon(aes(ymin = yl, ymax = yu), alpha = 0, linetype = "dashed", size = 0.5)+
+  geom_vline(
+    xintercept = key_dates, 
+    linetype = "dotted", 
+    color = "black", 
+    size = 0.6,
+    alpha = 0.7
+  ) +
+  scale_color_manual(values=c("#619CFF", "red")) +
+  xlab(expression(italic("t"))) +
+  ylab(expression(widehat(italic(gamma))[3](t))) + ylim(0, 4) +
+  theme(legend.position = "none") -> pp3
+plot(pp3)
+pdf(file = "bikeplots3/gamma3_hat.pdf", width = 5, height = 4.5)
+plot(pp3)
+dev.off()
+ggplot(p4, aes(x = t, y = y, group = het, colour = het, fill = het)) +
+  geom_line(linewidth = 0.3) +
+  geom_ribbon(aes(ymin = yl, ymax = yu), alpha = 0, linetype = "dashed", size = 0.5)+
+  geom_vline(
+    xintercept = key_dates, 
+    linetype = "dotted", 
+    color = "black", 
+    size = 0.6,
+    alpha = 0.7
+  ) +
+  scale_color_manual(values=c("#619CFF", "red")) +
+  xlab(expression(italic("t"))) +
+  ylab(expression(widehat(italic(gamma))[4](t))) + ylim(0, 4) +
+  theme(legend.position = "none") -> pp4
+plot(pp4)
+pdf(file = "bikeplots3/gamma4_hat.pdf", width = 5, height = 4.5)
+plot(pp4)
+dev.off()
+```
+
+## 2. The $\alpha_i$ and $\beta_i$ for all individuals
+### 2.1 Overall $\alpha_i$ and $\beta_i$.
+```{r echo=F}
+n = 542
+xkk[2*n, ] <- 0
+ave1 = colMeans(xkk[1:n, ])
+ave2 = colMeans(xkk[(n-1):(2*n), ])
+apply(xkk[1:n, ], 1, function(x)(x - ave1)) %>%  t() %>% as.data.frame()-> xxx_a
+apply(xkk[(n+1):(2*n), ], 1, function(x)(x - ave2)) %>% t() %>% as.data.frame() -> xxx_b
+
+
+colnames(xxx_a) <- paste0("t", 1:ncol(xkk))
+colnames(xxx_b) <- paste0("t", 1:ncol(xkk))
+rownames(xxx_a) <- bb$id
+rownames(xxx_b) <- bb$id
+# xxx_a[bb$id, ] %>% drop_na() -> xxx_a
+# xxx_b[bb$id, ] %>% drop_na() -> xxx_b
+
+data_a <- reshape2::melt(
+  cbind(id = rownames(xxx_a), xxx_a),  # 添加 id 列
+  id.vars = "id",                      # 指定 id 变量
+  variable.name = "time",              # 时间列名
+  value.name = "outdegree"             # 值列名
+)
+
+# 类似处理 data_b
+data_b <- reshape2::melt(
+  cbind(id = rownames(xxx_b), xxx_b),
+  id.vars = "id",
+  variable.name = "time",
+  value.name = "indegree"
+)
+data_full <- merge(data_a, data_b, by = c("id", "time"))
+data_full$time <- as.numeric(gsub("t", "", data_full$time))
+data_full <- merge(data_full, bb, by = 'id')
+```
+```{r echo=F}
+mean_outdegree <- rowMeans(xxx_a)
+mean_indegree <- rowMeans(xxx_b)
+outdegree_median <- median(as.numeric(as.matrix(xxx_a)))
+indegree_median <- median(as.numeric(as.matrix(xxx_b)))
+classification_all <- data.frame(
+    id = rownames(xxx_a),
+    category = case_when(
+      mean_outdegree > outdegree_median & mean_indegree > indegree_median ~ "High In & High Out",
+      mean_outdegree > outdegree_median & mean_indegree <= indegree_median ~ "Low In & High Out",
+      mean_outdegree <= outdegree_median & mean_indegree > indegree_median ~ "High In & Low Out",
+      mean_outdegree <= outdegree_median & mean_indegree <= indegree_median ~ "Low In & Low Out"
+    )
+  )
+
+dd <- merge(data_full, classification_all, by = 'id')
+p_out <- ggplot(dd, aes(x = time, y = outdegree, group = id)) +
+  geom_line(aes(color = id), alpha = 0.6, linewidth = 0.4) +  # 个体轨迹
+  scale_x_continuous(breaks = seq(1, 81, by = 10)) +  # 优化刻度
+  labs(x = "Observation times", y = "Standardized Outdegree",
+       title = "Individual Outdegree Trajectories with Population Trend") +
+  theme_bw(base_size = 12) +
+  theme(legend.position = "none")
+# 绘制入度时序图（带密度估计）
+p_in <- ggplot(dd, aes(x = time, y = indegree, group = id)) +
+  geom_line(aes(color = id), alpha = 0.6, linewidth = 0.4) +  # 个体轨迹
+  scale_x_continuous(breaks = seq(1,81, by = 10)) +  # 优化刻度
+  labs(x = "Observation times", y = "Standardized Outdegree",
+       title = "Individual indegree Trajectories with Population Trend") +
+  theme_bw(base_size = 12)+
+  theme(legend.position = "none")
+plot(p_out)
+plot(p_in)
+```
+#### Top 6 individuals with the highest cumulative indegree/outdegree
+```{r echo=FALSE}
+mean_outdegree <- rowMeans(xxx_a)
+mean_indegree <- rowMeans(xxx_b)
+individuals <- data.frame(
+  id = rownames(xxx_a),  # 个体ID
+  mean_outdegree = mean_outdegree,
+  mean_indegree = mean_indegree
+)
+# 定义高出度和高入度的标准（95%分位数）
+outdegree_threshold <- quantile(individuals$mean_outdegree, 0.99)
+indegree_threshold <- quantile(individuals$mean_indegree, 0.99)
+high_outdegree <- individuals %>% filter(mean_outdegree > outdegree_threshold)
+high_indegree <- individuals %>% filter(mean_indegree > indegree_threshold)
+# Plot for high-indegree individuals (most popular)
+ggplot(data_full %>% filter(id %in% high_indegree$id), aes(x = time)) +
+  geom_line(aes(y = outdegree, color = "Outdegree"), alpha = 0.3) +
+  geom_line(aes(y = indegree, color = "Indegree"), alpha = 0.3) +
+  facet_wrap(~id, scales = "free_y") +
+  theme_minimal() +
+  labs(title = "Most Popular Individuals, Highest indegree (Top 4)",
+       x = "Time", y = "Degree") +
+  scale_color_manual(values = c("Outdegree" = "blue", "Indegree" = "red"))
+
+# Plot for high-outdegree individuals (most outgoing)
+ggplot(data_full %>% filter(id %in% high_outdegree$id), aes(x = time)) +
+  geom_line(aes(y = outdegree, color = "Outdegree"), alpha = 0.3) +
+  geom_line(aes(y = indegree, color = "Indegree"), alpha = 0.3) +
+  facet_wrap(~id, scales = "free_y") +
+  theme_minimal() +
+  labs(title = "Most Outgoing Individuals, Highest outdegree (Top 4)",
+       x = "Time", y = "Degree") +
+  scale_color_manual(values = c("Outdegree" = "blue", "Indegree" = "red"))
+```
+
+#### Top 6 individuals with the highest volatility in indegree/outdegree
+```{r echo=FALSE}
+# 计算每个个体的平均出度和入度
+sd_outdegree <- apply(xxx_a, 1, sd, na.rm =T) %>% unlist()
+sd_indegree <- apply(xxx_b, 1, sd, na.rm =T) %>% unlist()
+# 创建数据框
+individuals <- data.frame(
+  id = rownames(xxx_a),  # 个体ID
+  sd_outdegree = sd_outdegree,
+  sd_indegree = sd_indegree
+)
+# 定义高出度和高入度的标准（75%分位数）
+outdegree_threshold <- quantile(individuals$sd_outdegree, 0.99)
+indegree_threshold <- quantile(individuals$sd_indegree, 0.99)
+highsd_outdegree <- individuals %>% filter(sd_outdegree > outdegree_threshold)
+highsd_indegree <- individuals %>% filter(sd_indegree > indegree_threshold)
+
+# 输出结果
+ggplot(data_full %>% filter(id %in% highsd_indegree$id), aes(x = time)) +
+  geom_line(aes(y = outdegree, color = "Outdegree"), alpha = 0.3) +
+  geom_line(aes(y = indegree, color = "Indegree"), alpha = 0.3) +
+  facet_wrap(~id, scales = "free_y") +
+  theme_minimal() +
+  labs(title = "Individuals with the highest volatility in indegree, top 4",
+       x = "time", y = "alpha and beta") +
+  scale_color_manual(values = c("Outdegree" = "blue", "Indegree" = "red"))
+
+ggplot(data_full %>% filter(id %in% highsd_outdegree$id), aes(x = time)) +
+  geom_line(aes(y = outdegree, color = "Outdegree"), alpha = 0.3) +
+  geom_line(aes(y = indegree, color = "Indegree"), alpha = 0.3) +
+  facet_wrap(~id, scales = "free_y") +
+  theme_minimal() +
+  labs(title = "Individuals with the highest volatility in outdegree, top 4",
+       x = "time", y = "alpha and beta") +
+  scale_color_manual(values = c("Outdegree" = "blue", "Indegree" = "red"))
+```
+
+
+### 2.2 Four stations as example:
+We use bike stations 101, 301, 401, 501 as an example, 
+where 301/501 show the same trends and 101/401 show the same trends.
+```{r eval = F}
+library(ggplot2)
+library(dplyr)
+
+load(file = "~/DCCOX/bikeplots3/xkk0.0532843989577126_2.rdata")
+load(file = "~/DCCOX/bikeplots3/xkkCI0.0532843989577126_2.rdata")
+load(file = "~/DCCOX/bikeplots3/xkkHomo0.0532843989577126_2.rdata")
+xkk <- xkk[, 21:91]
+xkkCI <- xkkCI[, 21:91]
+xkkHomo <- xkkHomo[, 21:91]
+tseq = seq(0.05,0.95,0.01)[21:91]
+ftrans = function(t) {
+  return(as.Date("20180101", format = "%Y%m%d") + (as.Date("20181231", format = "%Y%m%d") - as.Date("20180101", format = "%Y%m%d")) * t)
+}
+n = 542
+ave1 = colSums(xkk[1:n,])/n
+ave2 = colSums(xkk[(n+1):(2*n-1),])/(n-1)
+for(pk in c(1, 101, 201, 301, 401, 501)){
+  # ALPHA
+  p1 = data.frame(t1 = tseq %>% ftrans(),
+                  t2 = tseq,
+                  y = xkk[pk,] - ave1,
+                  yl = xkk[pk,] - ave1 - 1.96*xkkCI[pk,],
+                  yu = xkk[pk,] - ave1 + 1.96*xkkCI[pk,])
+
+  # BETA
+  p2 = data.frame(t1 = tseq %>% ftrans(),
+                  t2 = tseq,
+                  y = xkk[pk+n,] - ave2,
+                  yl = xkk[pk+n,] - ave2 - 1.96*xkkCI[pk,],
+                  yu = xkk[pk+n,] - ave2 + 1.96*xkkCI[pk,])
+
+  # 1a
+  ggplot(p1, aes(x = t2, y = y)) +
+    geom_line(color = "red", size = 0.75) +
+    geom_ribbon(aes(ymin = yl, ymax = yu), alpha = 0, color = "red", linetype = "dashed", size = 0.75) +  # 添加fill颜色映射
+    scale_x_continuous(
+      breaks = seq(0.1, 0.9, by = 0.2),  # 调整间隔为每0.2显示一个标签
+      labels = function(t) {
+        format(ftrans(t), "%b %d")       # 将数值转换为日期格式
+      }
+    ) +
+    xlab(expression(italic("t"))) +
+    ylab(expression(widehat(italic(alpha))[i]^"'"~(t))) -> f1
+  pdf(file = paste0("bikeplots3/alpha_", pk, ".pdf"), width = 5, height = 4.5)
+  plot(f1)
+  dev.off()
+  # 1b
+  ggplot(p2, aes(x = t2, y = y)) +
+    geom_line(color = "red", size = 0.75) +
+    geom_ribbon(aes(ymin = yl, ymax = yu), alpha = 0, color = "red", linetype = "dashed", size = 0.75) +# 添加fill颜色映射
+    scale_x_continuous(
+      breaks = seq(0.1, 0.9, by = 0.2),  # 调整间隔为每0.2显示一个标签
+      labels = function(t) {
+        format(ftrans(t), "%b %d")       # 将数值转换为日期格式
+      }
+    ) +
+    xlab(expression(italic("t"))) +
+    ylab(expression(widehat(italic(beta))[i]^"'"~(t))) -> f2
+  pdf(file = paste0("bikeplots3/beta_", pk, ".pdf"), width = 5, height = 4.5)
+  plot(f2)
+  dev.off()
+}
+```
+
+```{r echo=F}
+ bb %>% filter(id %in% c("101", "301", "401", "501")) %>% select(id, Start.station, start_long, start_lat)
+```
+
+```{r, echo=FALSE, fig.align='center', fig.cap= "301 alpha"}
+knitr::include_graphics("bikeplots3/alpha_301.pdf")
+```
+
+```{r, echo=FALSE, fig.align='center', fig.cap= "501 alpha"}
+knitr::include_graphics("bikeplots3/alpha_501.pdf")
+```
+
+```{r, echo=FALSE, fig.align='center', fig.cap= "301 beta"}
+knitr::include_graphics("bikeplots3/beta_301.pdf")
+```
+
+```{r, echo=FALSE, fig.align='center', fig.cap= "501 beta"}
+knitr::include_graphics("bikeplots3/beta_501.pdf")
+```
+
+```{r, echo=FALSE, fig.align='center', fig.cap= "101 alpha"}
+knitr::include_graphics("bikeplots3/alpha_101.pdf")
+```
+
+```{r, echo=FALSE, fig.align='center', fig.cap= "401 alpha"}
+knitr::include_graphics("bikeplots3/alpha_401.pdf")
+```
+
+```{r, echo=FALSE, fig.align='center', fig.cap= "101 beta"}
+knitr::include_graphics("bikeplots3/beta_101.pdf")
+```
+
+```{r, echo=FALSE, fig.align='center', fig.cap= "401 beta"}
+knitr::include_graphics("bikeplots3/beta_401.pdf")
+```
+
+Our model reveals distinct activity patterns across bike-sharing stations during public holidays (05-25, 09-06, and 11-11). Stations in central Washington, D.C.—20th St & Virginia Ave NW and New Hampshire Ave & T St NW—exhibit a marked decline in activity, while those in Northwest D.C. (Georgia Ave and Fairmont St NW) and Tysons, Virginia (Tysons West Transit Center) show significant increases. This divergence likely stems from the interplay of geographical location and holiday-driven behavior. In the urban core, residents’ outbound travel and reduced commercial activity during holidays like Memorial Day, Labor Day, and Veterans Day decrease bike usage. Conversely, the Northwest D.C. station, near Howard University, benefits from students and locals engaging in recreational cycling during these breaks. Meanwhile, Tysons West Transit Center, a transit hub, sees heightened activity as holiday travelers arrive via public transport and use bikes for short trips or leisure, supported by its proximity to commercial and recreational amenities. These findings highlight how location-specific activity patterns and holiday timing shape bike-sharing dynamics
+
+
+
+
+
+
+## 3. Clusters
+- Cluster the stations, by the estimated $\alpha_i(t)$ and $\beta_i(t)$.
+
+### 3.1 Cluster by perdetermined features  
+Features:
+- mean indegree: $\int \alpha_i(t)dt$
+- mean outdegree: $\int \alpha_i(t)dt$
+- sd indegree: $\int (\alpha_i(t) - \bar \alpha(t))^2 dt$
+- sd outdegree: $\int (\beta_i(t) - \bar \beta(t))^2 dt$
+- slope indegree: $\alpha_i(t) \sim \theta_i*t$
+- slope outdegree: $\beta_i(t) \sim \theta_i*t$
+- peak time: $\max_{t} (\alpha_i(t)-\beta_i(t))$
+
+Clustering was conducted by Kmeans algorithm.
+```{r echo=FALSE}
+n <- nrow(xxx_a)
+t <- ncol(xxx_a)
+# 合并为三维数组 (n x t x 2)
+data_3d <- array(c(xxx_a, xxx_b), dim = c(n, t, 2))
+# 自定义特征提取函数
+extract_features <- function(indeg, outdeg) {
+  net_flow <- outdeg - indeg
+  list(
+    mean_in = mean(indeg),
+    sd_in = sd(indeg),
+    slope_in = coef(lm(indeg ~ seq_along(indeg)))[2],
+    mean_out = mean(outdeg),
+    sd_out = sd(outdeg),
+    slope_out = coef(lm(outdeg ~ seq_along(outdeg)))[2],
+    peak_time = which.max(net_flow)
+  )
+}
+# 应用特征提取
+features <- t(sapply(1:n, function(i) {
+  unlist(extract_features(as.numeric(xxx_a[i, ]), as.numeric(xxx_b[i, ])))
+}))
+scaled_features <- scale(features)
+```
+
+
+```{r echo=FALSE}
+set.seed(123)
+k <- 4  # 假设分为4类
+kmeans_result <- kmeans(scaled_features, centers = k)
+clusters <- kmeans_result$cluster
+```
+
+```{r echo=FALSE}
+# dist_matrix <- dist(scaled_features)
+# hclust_result <- hclust(dist_matrix, method = "ward.D2")
+# clusters <- cutree(hclust_result, k = 4)
+```
+
+```{r echo=FALSE}
+# dist_matrix <- dist(scaled_features)
+# hclust_result <- hclust(dist_matrix, method = "ward.D2")
+# clusters <- cutree(hclust_result, k = 4)
+```
+
+```{r echo=F}
+centers <- as.data.frame(kmeans_result$centers)
+centers$cluster <- factor(1:k)
+centers_long <- gather(centers, key = "feature", value = "value", -cluster)
+# 定义与数学公式特征对应的颜色映射
+cluster_colors <- c("1" = "#000000",  # 黑色
+                    "2" = "#377EB8",  # 蓝色 
+                    "3" = "#E41A1C",  # 红色
+                    "4" = "#FFA500")  # 橙色 
+
+ggplot(centers_long, aes(x = feature, y = value, fill = cluster)) +
+  geom_bar(stat = "identity") +
+  facet_wrap(~ cluster) +
+  # 应用颜色映射
+  scale_fill_manual(values = cluster_colors) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        legend.position = "right") +
+  labs(title = "Cluster Centers by Transport Features",
+       x = "Feature Components",
+       y = "Standardized Value") +
+  theme(plot.title = element_text(size = 12, face = "bold"),
+        plot.subtitle = element_text(size = 9),
+        legend.title = element_text(face = "italic"))
+```
+```{r echo=FALSE}
+cls <- data.frame(id = as.character(1:n), clusters)
+merge(bb, cls, by = "id") -> bb
+leaflet(bb) %>%
+  addProviderTiles("CartoDB.Positron") %>%  # 改用浅色底图（关键修改1）
+  setView(lng = -77.0, lat = 38.9072, zoom = 13) %>%
+  addCircleMarkers(
+    lng = ~start_long,
+    lat = ~start_lat,
+    color = case_when(
+      clusters == 4 ~ "orange",
+      clusters == 3 ~ "red",
+      clusters == 2 ~ "blue",
+      clusters == 1 ~ "black",
+      TRUE ~ "gray"  # 默认颜色
+    ),
+    fillColor = case_when(
+      clusters == 4 ~ "orange",
+      clusters == 3 ~ "red",
+      clusters == 2 ~ "blue",
+      clusters == 1 ~ "black",
+      TRUE ~ "gray"  # 默认颜色
+    ),
+    radius = case_when(
+      clusters == 4 ~ 5,
+      clusters == 3 ~ 5,  # 圆形
+      clusters == 2 ~ 5,  # 稍大
+      clusters == 1 ~ 5   # 稍小
+    ),
+    stroke = FALSE,
+    fillOpacity = 0.7
+  )
+```
+
+### 3.2 Cluster: by all xxx_a, xxx_b
+Combine $\alpha_i(t)$ and $\beta_i(t)$ and apply the Kmeans algorithm.
+```{r echo=FALSE}
+set.seed(123)
+k <- 4  # 假设分为3类
+kmeans_result <- kmeans(cbind(xxx_a, xxx_b), centers = k)
+clusters <- kmeans_result$cluster
+```
+
+```{r echo=FALSE}
+cls <- data.frame(id = as.character(1:n), clusters)
+merge(bb, cls, by = "id") -> bb
+leaflet(bb) %>%
+  addProviderTiles("CartoDB.Positron") %>%  # 改用浅色底图（关键修改1）
+  setView(lng = -77.0, lat = 38.9072, zoom = 13) %>%
+  addCircleMarkers(
+    lng = ~start_long,
+    lat = ~start_lat,
+    color = case_when(
+      clusters == 4 ~ "orange",
+      clusters == 3 ~ "red",
+      clusters == 2 ~ "blue",
+      clusters == 1 ~ "black",
+      TRUE ~ "gray"  # 默认颜色
+    ),
+    fillColor = case_when(
+      clusters == 4 ~ "orange",
+      clusters == 3 ~ "red",
+      clusters == 2 ~ "blue",
+      clusters == 1 ~ "black",
+      TRUE ~ "gray"  # 默认颜色
+    ),
+    radius = case_when(
+      clusters == 4 ~ 5,
+      clusters == 3 ~ 5,  # 圆形
+      clusters == 2 ~ 5,  # 稍大
+      clusters == 1 ~ 5   # 稍小
+    ),
+    stroke = FALSE,
+    fillOpacity = 0.7
+  )
+```
+
+
+
+## 4. Group Changes
+To evalue the time volatility of $\alpha$ and $\beta$
+
+We first Divide the observation period into 9 intervals by months (from Apr to Dec): $T_1,...T_9$. 
+
+For $t$th interval, categorize individuals into 4 groups based on $\int_{T_t} \alpha(t)dt$: indegree and $\int_{T_t} \beta(t) dt$: The thresholds was obtained by the overall median: $\text{median }_{i=1,...,n,t=1,...,T } \alpha_i(t)$ and 
+ $\text{median }_{i=1,...,n,t=1,...,T } \beta_i(t)$.
+ 
+- High In & High Out
+- High In & Low Out
+- Low In & High Out
+- Low In & Low Out
+
+Compute the proportion of individuals shifting between categories across intervals.
+Use alluvial diagrams to illustrate the transitions
+
+### 4.1 Flow Plots
+```{r echo=FALSE}
+time_points <- 1:ncol(xxx_a)
+time_segments <- tseq%>%ftrans()%>%as.Date() %>% format("%b")
+all_segments <- unique(time_segments)
+seg_num <- length(all_segments)
+classification_list <- list()
+# 遍历每个时间段并分类
+for (seg in 1:seg_num) {
+  # 提取当前时间段的时间点
+  current_times <- which(time_segments == all_segments[seg])
+  # 提取当前时间段的出度和入度数据
+  # subgroups <- which(year_school == "Freshman")
+  # subgroups <- which(year_school == "GRT / Other")
+  # subgroups <- which(year_school != "GRT / Other")
+  subgroups <- 1:n
+  current_xxx_a <- xxx_a[subgroups, current_times, drop=FALSE]
+  current_xxx_b <- xxx_b[subgroups, current_times, drop=FALSE]
+  mean_outdegree <- rowMeans(current_xxx_a)
+  mean_indegree <- rowMeans(current_xxx_b)
+  # 分类个体
+  classification <- data.frame(
+    id = rownames(current_xxx_a),
+    segment = seg,
+    category = case_when(
+      mean_outdegree > outdegree_median & mean_indegree > indegree_median ~ "High In & High Out",
+      mean_outdegree > outdegree_median & mean_indegree <= indegree_median ~ "Low In & High Out",
+      mean_outdegree <= outdegree_median & mean_indegree > indegree_median ~ "High In & Low Out",
+      mean_outdegree <= outdegree_median & mean_indegree <= indegree_median ~ "Low In & Low Out"
+    )
+  )
+  # 存储结果
+  classification_list[[seg]] <- classification
+}
+
+# 合并所有时间段的分类结果
+all_classification <- do.call(rbind, classification_list)
+
+# 创建宽格式数据框，展示每个个体在每个时间段的类别
+classification_wide <- all_classification %>%
+  pivot_wider(names_from = segment, values_from = category, names_prefix = "seg_")
+alluv_data <- classification_wide %>%
+  pivot_longer(
+    cols = starts_with("seg_"),
+    names_to = "time_segment",
+    values_to = "category"
+  ) %>%
+  mutate(
+    time_segment = factor(gsub("seg_", "", time_segment), levels = 1:seg_num),
+    category = factor(category)
+  )
+# --- 自定义颜色映射 ---
+category_colors <- c(
+  "High In & High Out" = "#d73027",  # 深红
+  "High In & Low Out"  = "#fc8d59",  # 浅红
+  "Low In & High Out"  = "#4575b4",  # 深蓝
+  "Low In & Low Out"   = "#74add1"   # 浅蓝
+)
+
+# --- 高级可视化 ---
+ggplot(alluv_data, 
+       aes(x = time_segment, 
+           stratum = category, 
+           alluvium = id,
+           fill = category)) +
+  # 流线图层（调整透明度增强层次感）
+  geom_flow(alpha = 0.7, curve_type = "cubic") +
+  # 分层区块（隐藏边框）
+  geom_stratum(width = 0.3, color = NA) +
+  # 时间轴标签（专业排版）
+  scale_x_discrete(
+    name = NULL,
+    # name = "FROM 2018−04−02 TO 2018−12−13",
+    expand = expansion(add = 0.1),
+    labels = all_segments
+  ) +
+  # 颜色映射与图例设置
+  scale_fill_manual(
+    name = NULL,
+    # name = "FROM 2018−04−02 TO 2018−12−13",
+    # labels = c(
+    #   "High In/High Out",
+    #   "High In/Low Out",
+    #   "Low In/High Out",
+    #   "Low In/Low Out"
+    # ),
+    labels = c(
+      "Central stations",
+      "Attractor stations",
+      "Generator stations",
+      "Isolated stations"
+    ),
+    values = category_colors,
+    breaks = names(category_colors),
+  ) +
+  # 学术论文风格主题
+  theme_minimal(base_size = 12) +
+  theme(
+    panel.grid = element_blank(),
+    axis.text.y = element_blank(),
+    axis.title.y = element_blank(),
+    legend.position = "bottom",
+    legend.key.height = unit(0.8, "lines"),
+    legend.text = element_text(size = rel(0.9)),
+    plot.margin = margin(1, 2, 1, 1, "cm")
+  ) +
+  # 流线方向箭头（增强可读性）
+  annotate(
+    "segment",
+    x = 0.9, xend = 9.1, y = -0.05, yend = -0.05,
+    arrow = arrow(length = unit(0.3, "cm")),
+    color = "gray40"
+  ) +
+  # 比例说明（可选）
+  # labs(caption = "Flow width represents proportion of entities") +
+  # 颜色强化（防止打印褪色）
+  guides(fill = guide_legend(override.aes = list(alpha = 1))) -> pp7
+plot(pp7)
+pdf(file = "bikeplots3/flow_bike.pdf")
+plot(pp7)
+dev.off()
+```
+
+
+
+```{r echo=FALSE}
+# 1. 各segment的group比例折线图
+segment_proportions <- all_classification %>%
+  group_by(segment, category) %>%
+  summarise(count = n(), .groups = "drop_last") %>%
+  mutate(proportion = count / sum(count)) %>%
+  ungroup()
+
+# 绘制比例变化折线图
+ggplot(segment_proportions, aes(x = segment, y = proportion, color = category)) +
+  geom_line(size = 1.2) +
+  geom_point(size = 3) +
+  scale_color_manual(
+    name = NULL,
+    # name = "FROM 2018−04−02 TO 2018−12−13",
+    # labels = c(
+    #   "High In/High Out",
+    #   "High In/Low Out",
+    #   "Low In/High Out",
+    #   "Low In/Low Out"
+    # ),
+    labels = c(
+      "Central stations",
+      "Attractor stations",
+      "Generator stations",
+      "Isolated stations"
+    ),
+    values = category_colors,
+    breaks = names(category_colors)
+    ) +
+  scale_x_continuous(
+    name = NULL,
+    breaks = 1:length(all_segments),
+    # name = "FROM 2018−04−02 TO 2018−12−13",
+    expand = expansion(add = 0.1),
+    labels = all_segments
+  ) +
+  scale_y_continuous(labels = scales::percent) +
+  labs(
+    # x = NULL, 
+       x = "FROM 2018−04−02 TO 2018−12−13",
+       y = "Proportion", 
+       title = NULL,
+       color = NULL) +
+  theme_minimal(base_size = 12) +
+  theme(legend.position = "bottom") -> pp8
+plot(pp8)
+pdf(file = "bikeplots3/line_bike.pdf")
+plot(pp8)
+dev.off()
+```
+
+
+
+The alluvial diagrams reveal two distinct transport patterns in the bike-sharing network:
+
+- Persistent Asymmetry Deficit
+The proportion of stations exhibiting transport asymmetry (High-In/Low-Out $\le 5\%$; Low-In/High-Out $\le 6\%$) remains consistently low throughout observed cycles. This contrasts sharply with social network reciprocity where  nodes typically show follower/following asymmetry (High-In/Low-Out $\le 41\%$; Low-In/High-Out $\le 30\%$), indicating fundamental differences in directional flow mechanisms between social and transport networks. This indicates The proposed model effectively captures the dynamic characteristics of bike-sharing stations, reflecting real-world operational features.
+
+- Seasonal Demand Polarization
+Furthermore, the model identifies seasonal demand polarization, where 'High In/High Out' stations exhibit cyclical behavior: demand peaks in April, gradually declines in summer, and rebounds in autumn, aligning with external factors such as weather and urban activity patterns. These findings demonstrate that the model is robust in characterizing the structural stability and temporal adaptability of the bike-sharing network, providing a valuable framework for optimizing resource allocation and station management.
+
+### 4.2 Trans propotions Plots
+```{r echo=FALSE, eval=F}
+# 1. 计算各segment中不同group的比例
+segment_proportions <- all_classification %>%
+  group_by(segment, category) %>%
+  summarise(count = n(), .groups = "drop_last") %>%
+  mutate(proportion = count / sum(count)) %>%
+  ungroup()
+
+# 输出各segment的group比例
+# print(segment_proportions, n = Inf)
+
+# 2. 计算相邻segment间的转化比例
+transition_rates <- classification_wide %>%
+  # 计算相邻segment间的状态变化
+  mutate(
+    seg1_to_seg2 = ifelse(seg_1 != seg_2, "Changed", "Stayed"),
+    seg2_to_seg3 = ifelse(seg_2 != seg_3, "Changed", "Stayed"),
+    seg3_to_seg4 = ifelse(seg_3 != seg_4, "Changed", "Stayed"),
+    seg4_to_seg5 = ifelse(seg_4 != seg_5, "Changed", "Stayed")
+  ) %>%
+  # 计算各transition的变化率
+  summarise(
+    rate_1_2 = sum(seg1_to_seg2 == "Changed")/n(),
+    rate_2_3 = sum(seg2_to_seg3 == "Changed")/n(),
+    rate_3_4 = sum(seg3_to_seg4 == "Changed")/n(),
+    rate_4_5 = sum(seg4_to_seg5 == "Changed")/n()
+  )
+
+# 输出转化率矩阵
+transition_matrix <- classification_wide %>%
+  # 创建所有相邻segment的组合
+  select(id, seg_1:seg_5) %>%
+  pivot_longer(
+    cols = -id,
+    names_to = "segment",
+    values_to = "category"
+  ) %>%
+  mutate(segment = as.numeric(gsub("seg_", "", segment))) %>%
+  arrange(id, segment) %>%
+  group_by(id) %>%
+  mutate(
+    from = lag(category),
+    to = category
+  ) %>%
+  filter(!is.na(from)) %>%
+  ungroup() %>%
+  # 计算转移频次
+  count(from, to) %>%
+  # 计算转移概率
+  group_by(from) %>%
+  mutate(prob = n/sum(n)) %>%
+  ungroup()
+
+# 打印转移概率矩阵
+# print(transition_matrix, n = Inf)
+
+# 3. 可视化转化比例
+ggplot(transition_matrix, aes(x = from, y = to, fill = prob)) +
+  geom_tile(color = "white") +
+  geom_text(aes(label = scales::percent(prob, accuracy = 1)), 
+            color = "white", size = 4) +
+  scale_fill_gradient(low = "#74add1", high = "#d73027", 
+                      labels = scales::percent) +
+  labs(x = "Previous Segment", y = "Current Segment",
+       title = "Social Role Transition Probabilities",
+       fill = "Transition\nProbability") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+```{r echo=FALSE}
+# 2. 按segment分组的转移概率矩阵
+transition_matrices <- classification_wide %>%
+  select(id, seg_1:seg_9) %>%
+  pivot_longer(
+    cols = -id,
+    names_to = "segment",
+    values_to = "category"
+  ) %>%
+  mutate(segment = as.numeric(gsub("seg_", "", segment))) %>%
+  arrange(id, segment) %>%
+  group_by(id) %>%
+  mutate(
+    from_segment = segment,
+    from_category = lag(category),
+    to_category = category
+  ) %>%
+  filter(!is.na(from_category)) %>%
+  ungroup() %>%
+  # 按segment分组计算转移概率
+  group_by(from_segment, from_category, to_category) %>%
+  summarise(n = n(), .groups = "drop_last") %>%
+  mutate(prob = n / sum(n)) %>%
+  ungroup()
+
+# 为每个segment创建转移概率热力图
+transition_plots <- lapply(2:(seg_num), function(s) {
+  transition_matrices %>%
+    filter(from_segment == s) %>%
+    ggplot(aes(x = from_category, y = to_category, fill = prob)) +
+    geom_tile(color = "white") +
+    geom_text(aes(label = scales::percent(prob, accuracy = 1)), 
+              color = "white", size = 3.5) +
+    scale_fill_gradient(low = "#74add1", high = "#d73027", 
+                       limits = c(0, 1), labels = scales::percent) +
+    labs(x = "From Role", y = "To Role", 
+         title = paste(all_segments[s-1], "→", all_segments[s], "Transitions"),
+         fill = "Probability") +
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1),
+          plot.title = element_text(size = 10))
+})
+
+# 使用patchwork包组合所有热力图
+library(ggpubr)
+ggarrange(transition_plots[[1]], transition_plots[[4]],
+          transition_plots[[5]], transition_plots[[8]],
+          nrow=2, ncol = 2, common.legend = T) 
+```
+```{r echo=F}
+# 计算每个个体的状态转移次数
+transition_counts <- classification_wide %>%
+  mutate(
+    trans_count = rowSums(.[2:seg_num] != .[3:(seg_num+1)], na.rm = TRUE)
+  ) %>%
+  select(id, trans_count)
+
+# 统计转移次数的分布
+transition_stats <- transition_counts %>%
+  group_by(trans_count) %>%
+  summarise(
+    count = n(),
+    proportion = n() / nrow(transition_counts)
+  ) %>%
+  ungroup()
+
+# 输出转移次数统计表
+# cat("State Transition Counts Distribution:\n")
+# print(transition_stats, n = Inf)
+
+# 可视化转移次数分布
+ggplot(transition_stats, aes(x = factor(trans_count), y = count)) +
+  geom_col(fill = "#4575b4", alpha = 0.8) +
+  geom_text(aes(label = paste0(count, "\n(", scales::percent(proportion, 1), ")")),
+            vjust = -0.5, size = 4) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1))) +
+  labs(x = "Number of State Transitions", 
+       y = "Count of Individuals",
+       title = "Distribution of Social Role Transition Counts",
+       subtitle = paste("Total", nrow(transition_counts), "individuals across", seg_num-1, "transitions")) +
+  theme_minimal(base_size = 12) +
+  theme(panel.grid.major.x = element_blank())
+
+# 检查转移次数与初始状态的关系
+initial_state <- classification_wide %>%
+  mutate(trans_count = transition_counts$trans_count) %>%
+  group_by(seg_1, trans_count) %>%
+  summarise(count = n(), .groups = "drop") %>%
+  group_by(seg_1) %>%
+  mutate(prop = count / sum(count)) %>%
+  ungroup()
+
+ggplot(initial_state, aes(x = seg_1, y = prop, fill = factor(trans_count))) +
+  geom_bar(stat = "identity", position = "stack") +
+  geom_text(aes(label = scales::percent(prop, 1)), 
+            position = position_stack(vjust = 0.5),
+            color = "white", size = 3) +
+  scale_fill_brewer(palette = "RdYlBu", direction = -1) +
+  scale_y_continuous(labels = scales::percent) +
+  labs(x = "Initial Social Role", y = "Proportion",
+       fill = "Transition\nCount",
+       title = "Transition Counts by Initial Social Role") +
+  theme_minimal() +
+  theme(legend.position = "right")
+```
+```{r echo=F, eval=F}
+# 计算每个segment transition的转移情况
+segment_transitions <- classification_wide %>%
+  mutate(
+    trans_1_2 = ifelse(seg_1 != seg_2, 1, 0),
+    trans_2_3 = ifelse(seg_2 != seg_3, 1, 0),
+    trans_3_4 = ifelse(seg_3 != seg_4, 1, 0),
+    trans_4_5 = ifelse(seg_4 != seg_5, 1, 0)
+  ) %>%
+  summarise(
+    seg1_to_seg2 = sum(trans_1_2),
+    seg2_to_seg3 = sum(trans_2_3),
+    seg3_to_seg4 = sum(trans_3_4),
+    seg4_to_seg5 = sum(trans_4_5),
+    total_individuals = n()
+  ) %>%
+  pivot_longer(
+    cols = starts_with("seg"),
+    names_to = "transition",
+    values_to = "changed_count"
+  ) %>%
+  mutate(
+    changed_pct = changed_count / total_individuals,
+    transition = gsub("_to_", " → ", transition)
+  )
+
+# 输出结果
+# cat("Transition Statistics Between Segments:\n")
+# print(segment_transitions, n = Inf)
+
+# 可视化每个transition的转移比例
+ggplot(segment_transitions, aes(x = transition, y = changed_pct)) +
+  geom_col(fill = "#1b9e77", alpha = 0.8) +
+  geom_text(aes(label = paste0(changed_count, " (", scales::percent(changed_pct, 1), ")")),
+            vjust = -0.5, size = 4) +
+  scale_y_continuous(labels = scales::percent, limits = c(0, 1)) +
+  labs(x = "Segment Transition", y = "Percentage Changed",
+       title = "Social Role Transition Rates Between Segments",
+       subtitle = paste("Total", unique(segment_transitions$total_individuals), "individuals")) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+# 按初始状态分组查看转移倾向
+initial_state_transitions <- classification_wide %>%
+  mutate(
+    trans_1_2 = ifelse(seg_1 != seg_2, 1, 0),
+    trans_2_3 = ifelse(seg_2 != seg_3, 1, 0),
+    trans_3_4 = ifelse(seg_3 != seg_4, 1, 0),
+    trans_4_5 = ifelse(seg_4 != seg_5, 1, 0)
+  ) %>%
+  group_by(Initial_State = seg_1) %>%
+  summarise(
+    seg1_to_seg2 = mean(trans_1_2),
+    seg2_to_seg3 = mean(trans_2_3),
+    seg3_to_seg4 = mean(trans_3_4),
+    seg4_to_seg5 = mean(trans_4_5),
+    .groups = "drop"
+  ) %>%
+  pivot_longer(
+    cols = starts_with("seg"),
+    names_to = "transition",
+    values_to = "change_rate"
+  ) %>%
+  mutate(
+    transition = gsub("_to_", " → ", transition)
+  )
+
+# 可视化初始状态对转移率的影响
+ggplot(initial_state_transitions, aes(x = transition, y = change_rate, fill = Initial_State)) +
+  geom_col(position = "dodge") +
+  geom_text(aes(label = scales::percent(change_rate, 1)),
+            position = position_dodge(width = 0.9),
+            vjust = -0.5, size = 3) +
+  scale_fill_manual(values = category_colors) +
+  scale_y_continuous(labels = scales::percent) +
+  labs(x = "Segment Transition", y = "Transition Rate",
+       title = "Transition Rates by Initial Social Role",
+       fill = "Initial Role") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        legend.position = "bottom")
+```
+
+
+
+
+
+### 4.3 Map illustration
+
+#### Month: May
+```{r echo=F}
+cls <- all_classification %>% filter(segment == 1)
+merge(bb, cls, by = "id") -> cc
+category_colors <- c(
+  "High In & High Out" = "#d73027",  # 深红
+  "High In & Low Out"  = "#fc8d59",  # 浅红
+  "Low In & High Out"  = "#4575b4",  # 深蓝
+  "Low In & Low Out"   = "#74add1"   # 浅蓝
+)
+leaflet(cc) %>%
+  addProviderTiles("CartoDB.Positron") %>%
+  setView(lng = -77.0, lat = 38.9072, zoom = 13) %>%
+  addCircleMarkers(
+    lng = ~start_long,
+    lat = ~start_lat,
+    color = ~case_when(
+      category == "High In & High Out" ~ "#d73027",
+      category == "High In & Low Out" ~ "#fc8d59",
+      category == "Low In & High Out" ~ "#4575b4",
+      TRUE ~ "#74add1"
+    ),
+    fillColor = ~case_when(
+category == "High In & High Out" ~ "#d73027",
+      category == "High In & Low Out" ~ "#fc8d59",
+      category == "Low In & High Out" ~ "#4575b4",
+      TRUE ~ "#74add1"
+    ),
+    radius = ~case_when(
+      category == "High In & High Out" ~ 3,
+      category == "High In & Low Out" ~ 5,
+      category == "Low In & High Out" ~ 5,
+      TRUE ~ 3
+    ),
+    stroke = FALSE,
+    fillOpacity = 1
+  ) %>%
+  addLegend(
+    position = "bottomright",  # 图例位置（可选：topleft/topright/bottomleft/bottomright）
+    colors = c("#d73027", "#fc8d59", "#4575b4", "#74add1"),  # 颜色顺序需与case_when一致
+    labels = c("High In & High Out", 
+               "High In & Low Out", 
+               "Low In & High Out", 
+               "Low In & Low Out"),  # 图例标签
+    title = "Bike Station Categories",  # 图例标题
+    opacity = 0.8  # 图例透明度（可选）
+  )
+```
+
+#### Month: Aug
+```{r echo=F}
+cls <- all_classification %>% filter(segment == 2)
+merge(bb, cls, by = "id") -> cc
+category_colors <- c(
+  "High In & High Out" = "#d73027",  # 深红
+  "High In & Low Out"  = "#fc8d59",  # 浅红
+  "Low In & High Out"  = "#4575b4",  # 深蓝
+  "Low In & Low Out"   = "#74add1"   # 浅蓝
+)
+leaflet(cc) %>%
+  addProviderTiles("CartoDB.Positron") %>%
+  setView(lng = -77.0, lat = 38.9072, zoom = 13) %>%
+  addCircleMarkers(
+    lng = ~start_long,
+    lat = ~start_lat,
+    color = ~case_when(
+      category == "High In & High Out" ~ "#d73027",
+      category == "High In & Low Out" ~ "#fc8d59",
+      category == "Low In & High Out" ~ "#4575b4",
+      TRUE ~ "#74add1"
+    ),
+    fillColor = ~case_when(
+category == "High In & High Out" ~ "#d73027",
+      category == "High In & Low Out" ~ "#fc8d59",
+      category == "Low In & High Out" ~ "#4575b4",
+      TRUE ~ "#74add1"
+    ),
+    radius = ~case_when(
+      category == "High In & High Out" ~ 3,
+      category == "High In & Low Out" ~ 5,
+      category == "Low In & High Out" ~ 5,
+      TRUE ~ 3
+    ),
+    stroke = FALSE,
+    fillOpacity = 1
+  ) %>%
+  addLegend(
+    position = "bottomright",  # 图例位置（可选：topleft/topright/bottomleft/bottomright）
+    colors = c("#d73027", "#fc8d59", "#4575b4", "#74add1"),  # 颜色顺序需与case_when一致
+    labels = c("High In & High Out", 
+               "High In & Low Out", 
+               "Low In & High Out", 
+               "Low In & Low Out"),  # 图例标签
+    title = "Bike Station Categories",  # 图例标题
+    opacity = 0.8  # 图例透明度（可选）
+  )
+```
+
+
+#### Month: Nov
+```{r echo=F}
+cls <- all_classification %>% filter(segment == 3)
+merge(bb, cls, by = "id") -> cc
+category_colors <- c(
+  "High In & High Out" = "#d73027",  # 深红
+  "High In & Low Out"  = "#fc8d59",  # 浅红
+  "Low In & High Out"  = "#4575b4",  # 深蓝
+  "Low In & Low Out"   = "#74add1"   # 浅蓝
+)
+leaflet(cc) %>%
+  addProviderTiles("CartoDB.Positron") %>%
+  setView(lng = -77.0, lat = 38.9072, zoom = 13) %>%
+  addCircleMarkers(
+    lng = ~start_long,
+    lat = ~start_lat,
+    color = ~case_when(
+      category == "High In & High Out" ~ "#d73027",
+      category == "High In & Low Out" ~ "#fc8d59",
+      category == "Low In & High Out" ~ "#4575b4",
+      TRUE ~ "#74add1"
+    ),
+    fillColor = ~case_when(
+category == "High In & High Out" ~ "#d73027",
+      category == "High In & Low Out" ~ "#fc8d59",
+      category == "Low In & High Out" ~ "#4575b4",
+      TRUE ~ "#74add1"
+    ),
+    radius = ~case_when(
+      category == "High In & High Out" ~ 3,
+      category == "High In & Low Out" ~ 5,
+      category == "Low In & High Out" ~ 5,
+      TRUE ~ 3
+    ),
+    stroke = FALSE,
+    fillOpacity = 1
+  ) %>%
+  addLegend(
+    position = "bottomright",  # 图例位置（可选：topleft/topright/bottomleft/bottomright）
+    colors = c("#d73027", "#fc8d59", "#4575b4", "#74add1"),  # 颜色顺序需与case_when一致
+    labels = c("High In & High Out", 
+               "High In & Low Out", 
+               "Low In & High Out", 
+               "Low In & Low Out"),  # 图例标签
+    title = "Bike Station Categories",  # 图例标题
+    opacity = 0.8  # 图例透明度（可选）
+  )
+```
+
+
+## Gof: Our's method ( effect)
+```{r echo=F}
+iseq <- c(1:50)
+load("goodness_of_fit_bike2/es_Ni.rdata")
+load("goodness_of_fit_bike2/es_Nj.rdata")
+re_i <- c()
+for(i in iseq){
+  re <- cbind(t(es_Ni_list[[i]]), i)
+  colnames(re) <- c("Number of events of senders", "Esimtated cumulative intensity", "Sender")
+  re_i <- rbind(re_i, re)
+}
+re_i %>% as.data.frame() -> re_i
+# re_i$Sender %>% as.factor() -> re_i$Sender
+
+re_j <- c()
+for(j in iseq){
+  re <- cbind(t(es_Nj_list[[j]]), j)
+  colnames(re) <- c("Number of events of receivers", "Esimtated cumulative intensity", "Receiver")
+  re_j <- rbind(re_j, re)
+}
+re_j %>% as.data.frame() -> re_j
+# re_j$Receiver %>% as.factor() -> re_j$Receiver
+
+```
+
+```{r echo=F}
+ggplot(re_i, aes(x = `Number of events of senders`, y = `Esimtated cumulative intensity`, color = `Sender`)) +
+  geom_point(size = 0.5) +
+  geom_abline(intercept = 0, slope = 1, color = "red", linetype = "dashed") + 
+  labs(title = NULL,
+       x = "Number of events of senders",
+       y = "Estimated cumulative intensity")-> p1
+p1
+```
+```{r echo=F, eval=F}
+pdf(file = "goodness_of_fit_bike2/Our_sender.pdf", width = 6, height = 5)
+plot(p1)
+dev.off()
+```
+
+```{r echo=F}
+ggplot(re_j, aes(x = `Number of events of receivers`, y = `Esimtated cumulative intensity`, color = `Receiver`)) +
+  geom_point(size = 0.5) +
+  geom_abline(intercept = 0, slope = 1, color = "red", linetype = "dashed") + 
+  labs(title = NULL,
+       x = "Number of events of receivers",
+       y = "Estimated cumulative intensity")-> p2
+p2
+```
+
+```{r echo=F, eval=F}
+pdf(file = "goodness_of_fit_bike2/Our_receiver.pdf", width = 6, height = 5)
+plot(p2)
+dev.off()
+```
+
+## Gof: K's method (homo effect)
+
+```{r echo=F}
+load("goodness_of_fit_bike2/homo_es_Ni.rdata")
+load("goodness_of_fit_bike2/homo_es_Nj.rdata")
+re_i <- c()
+for(i in iseq){
+  re <- cbind(t(es_Ni_homo_list[[i]]), i)
+  colnames(re) <- c("Number of events of senders", "Esimtated cumulative intensity", "Sender")
+  re_i <- rbind(re_i, re)
+}
+re_i %>% as.data.frame() -> re_i
+# re_i$Sender %>% as.factor() -> re_i$Sender
+
+re_j <- c()
+for(j in iseq){
+  re <- cbind(t(es_Nj_homo_list[[j]]), j)
+  colnames(re) <- c("Number of events of receivers", "Esimtated cumulative intensity", "Receiver")
+  re_j <- rbind(re_j, re)
+}
+re_j %>% as.data.frame() -> re_j
+# re_j$Receiver %>% as.factor() -> re_j$Receiver
+
+```
+
+```{r  echo=F}
+ggplot(re_i, aes(x = `Number of events of senders`, y = `Esimtated cumulative intensity`, color = `Sender`)) +
+  geom_point(size = 0.5) +
+  geom_abline(intercept = 0, slope = 1, color = "red", linetype = "dashed") + 
+  labs(title = NULL,
+       x = "Number of events of senders",
+       y = "Estimated cumulative intensity") -> p1
+p1
+```
+```{r echo=F, eval=F}
+pdf(file = "goodness_of_fit_bike2/Homo_sender.pdf", width = 6, height = 5)
+plot(p1)
+dev.off()
+```
+```{r echo=F}
+ggplot(re_j, aes(x = `Number of events of receivers`, y = `Esimtated cumulative intensity`, color = `Receiver`)) +
+  geom_point(size = 0.5) +
+  geom_abline(intercept = 0, slope = 1, color = "red", linetype = "dashed") + 
+  labs(title = NULL,
+       x = "Number of events of receivers",
+       y = "Estimated cumulative intensity") -> p2
+p2
+```
+```{r echo=F, eval=F}
+pdf(file = "goodness_of_fit_bike2/Homo_receiver.pdf", width = 6, height = 5)
+plot(p2)
+dev.off()
+```
+
+

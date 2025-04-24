@@ -106,7 +106,8 @@ diag(test1$O1)
 xkk = xkk[,5:71]
 xkkCI = xkkCI[,5:71]
 seq(0.2,0.9,0.01)[5:71]
-
+# save(xkk, file = "mit_plots/xkk.rdata")
+# save(xkkCI, file = "mit_plots/xkkCI.rdata")
 
 library(ggplot2)
 
@@ -229,7 +230,7 @@ for (i in rerun) {
 
 # xkk = xkk[, -1]
 xkkHomo = xkkHomo[, -1]
-
+save(xkkHomo, file = "mit_plots/xkkHomo.rdata")
 # plot(xkk[,33], xkk[,34])
 # plot(xkkCI[1:300,50], xkkCI[1:300,51])
 # plot(xkkCI[,50], xkkCI[,51])

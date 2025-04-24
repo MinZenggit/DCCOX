@@ -1,10 +1,12 @@
 # bike data management
 library(readr)
-dt201805 <- read_csv("bikedata/201805-capitalbikeshare-tripdata.csv")
-dt201804 <- read_csv("bikedata/201804-capitalbikeshare-tripdata.csv")
+library(dplyr)
+dt201805 <- read.csv("bikedata/201805-capitalbikeshare-tripdata.csv")
+dt201804 <- read.csv("bikedata/201804-capitalbikeshare-tripdata.csv")
 # View(dt201804)
-dt201804$`Start station number` %>% unique() -> aa
-dt201804$`End station number` %>% unique() -> bb
+dt201804$Start.station.number %>% unique() -> aa
+dt201804$End.station.number %>% unique() -> bb
+
 
 # compute the distance
 dt201804 %>%
@@ -69,4 +71,4 @@ save(bike_data, file = "bikedata/bike_data.rdata")
 
 ###
 # 只研究四月份超过十次以上connection的那些边
-
+dt201805 <- read_csv("bikedata/201805-capitalbikeshare-tripdata.csv")

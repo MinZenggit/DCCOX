@@ -103,12 +103,11 @@ NumericVector NewtonMC_test(NumericMatrix Trail, NumericVector Zij, NumericVecto
             f1(i) = mf1;
     }
     
-    int nu = 1;
+    int iter = 0; // 新增迭代计数器
+    const int max_iter = 3000; // 最大迭代次数
     
-    while (conv > 0.0001) {
-        
-        nu--;
-        
+    while (conv > 0.0001 && iter < max_iter) { // 修改循环条件
+        iter++; 
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n - 1; j++) {
                 if (i != j) {
@@ -226,7 +225,8 @@ NumericVector NewtonMC_test(NumericMatrix Trail, NumericVector Zij, NumericVecto
         xk += 0.05*dd; // NEED JUDGE
         conv = dd.norm();
     }
-     
-    
+    if (iter == max_iter) {
+      Rcpp::warning("Reached maximum iterations without convergence");
+    }
     return Rcpp::wrap(xk);
 }

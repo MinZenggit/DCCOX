@@ -24,18 +24,18 @@ n = dim(zij)[1]
 nn = nrow(trail)
 p = 2
 
-Nij = matrix(0, nrow = n, ncol = n)
-for (z in 1:nn) {
-  i = trail[z, 1] %>% as.numeric()
-  j = trail[z, 2] %>% as.numeric()
-  Nij[i, j] = Nij[i, j] + 1
-}
-write.csv(Nij, file = "bikeplots/Nij_bike.csv")
-colSums(Nij) -> colsum_bike
-rowSums(Nij) -> rowsum_bike
-cbind(colsum_bike, rowsum_bike) -> dd_bike
-colnames(dd_bike) = c("colsum", "rowsum")
-write.csv(dd_bike, file = "bikeplots/dd_bike.csv")
+# Nij = matrix(0, nrow = n, ncol = n)
+# for (z in 1:nn) {
+#   i = trail[z, 1] %>% as.numeric()
+#   j = trail[z, 2] %>% as.numeric()
+#   Nij[i, j] = Nij[i, j] + 1
+# }
+# write.csv(Nij, file = "bikeplots/Nij_bike.csv")
+# colSums(Nij) -> colsum_bike
+# rowSums(Nij) -> rowsum_bike
+# cbind(colsum_bike, rowsum_bike) -> dd_bike
+# colnames(dd_bike) = c("colsum", "rowsum")
+# write.csv(dd_bike, file = "bikeplots/dd_bike.csv")
 
 # h1 = 0.025*n^(-0.1)#0.01577393
 # h2 = 0.05*n^(-0.2)#0.01990536
@@ -54,7 +54,6 @@ xk1 = NewtonMC_ini(as.matrix(trail), zij, rep(0, 2*n + p - 1), 0.1, h1, h2, n, n
 # xk1 = NewtonMC_ini(as.matrix(trail), zij, c(xk1, 0), 0.1, h1, h2, n, nn, 16)
 
 # sum(trail$time <0.1)/nn
-
 for (t in seq(0.1, 0.9, 0.01)) {
   xk2 = NewtonMC_test(as.matrix(trail), zij, rep(0, 2*n + p - 1), t, h1, h2, n, nn, p)
   xkk = cbind(xkk, matrix(xk2))

@@ -1,0 +1,633 @@
+---
+title: "MIT further"
+author: 'Min'
+date: "2025-03-29"
+output:
+  html_document:
+    highlight: tango
+    theme: readable
+    toc: yes
+    toc_float: 
+      collapsed: false
+      smooth_scroll: true
+---
+
+```{r setup, include=FALSE}
+# 首先加载需要的包）
+rm(list = ls())
+library(ggalluvial)
+library(patchwork)
+library(dplyr)
+library(reshape2)
+library(tidyr)
+library(lubridate)
+library(plotly)
+library(cluster)
+library(factoextra)
+library(gridExtra)
+library(tibble)
+library(reshape2)
+library(ggplot2)
+library(RColorBrewer)
+library(lme4)
+set.seed(123)
+library(dplyr)
+load(file = "proxyData.rda")
+load(file = "mit_plots/xkk.rdata")
+load(file = "mit_plots/xkkCI.rdata")
+load(file = "mit_plots/xkkHomo.rdata")
+n = 63
+xkk[2*n, ] <- 0
+ave1 = colMeans(xkk[1:n, ])
+ave2 = colMeans(xkk[(n-1):(2*n), ])
+apply(xkk[1:n, ], 1, function(x)(x - ave1)) %>% t()-> xxx_a
+apply(xkk[(n+1):(2*n), ], 1, function(x)(x - ave2)) %>% t() -> xxx_b
+
+# xxx_a <- xkk[1:n, ]
+# xxx_b <- xkk[(n+1):(2*n-1),]
+xxx_a <- xxx_a[c(-22, -44), ]
+xxx_b <- xxx_b[c(-22, -44), ]
+
+n = 61
+colnames(xxx_a) <- paste0("t", 1:67)
+colnames(xxx_b) <- paste0("t", 1:67)
+rownames(xxx_a) <- paste0("id", 1:n)
+rownames(xxx_b) <- paste0("id", 1:n)
+
+year_school = proxyData$sector$year_school;
+new_id = proxyData$sector$new_id;
+floor = proxyData$sector$floor
+covariates <- data.frame(id = paste0("id", new_id), floor = floor, year_school = year_school)
+covariates[c(-22, -44),] -> covariates
+covariates$id <- paste0("id", 1:n)
+data_a <- melt(xxx_a, varnames = c("id", "time"), value.name = "outdegree")
+data_b <- melt(xxx_b, varnames = c("id", "time"), value.name = "indegree")
+data_full <- merge(data_a, data_b, by = c("id", "time"))
+data_full$time <- as.numeric(gsub("t", "", data_full$time))
+data_full <- merge(data_full, covariates, by = 'id')
+```
+
+# The MIT data analysis
+
+The parameters $\alpha_i(t)$s and $\beta_i(t)$s in our model represent intrinsic social personality traits—social initiative and social receptiveness, respectively—that persist beyond environmental confounders. By explicitly adjusting for institutional factors (academic year cohort) and spatial determinants (floor proximity) within the Cox proportional hazards framework, we isolate these latent behavioral constructs from transient contextual influences.
+
+Our analysis reveals substantial heterogeneity in social behavioral signatures. Both Inter-individual divergence (individual-varying) and Intra-individual evolution (time-varying).
+
+### The overall $\alpha_i$ and $\beta_i$ for all individuals
+
+
+```{r echo=FALSE}
+mean_outdegree <- rowMeans(xxx_a)
+mean_indegree <- rowMeans(xxx_b)
+outdegree_median <- median(as.numeric(xxx_a))
+indegree_median <- median(as.numeric(xxx_b))
+classification_all <- data.frame(
+    id = rownames(xxx_a),
+    category = case_when(
+      mean_outdegree > outdegree_median & mean_indegree > indegree_median ~ "High In & High Out",
+      mean_outdegree > outdegree_median & mean_indegree <= indegree_median ~ "Low In & High Out",
+      mean_outdegree <= outdegree_median & mean_indegree > indegree_median ~ "High In & Low Out",
+      mean_outdegree <= outdegree_median & mean_indegree <= indegree_median ~ "Low In & Low Out"
+    )
+  )
+
+dd <- merge(data_full, classification_all, by = 'id')
+p_out <- ggplot(dd[which(dd$id != "id44"), ], aes(x = time, y = outdegree, group = id)) +
+  geom_line(aes(color = category), alpha = 0.6, linewidth = 0.4) +  # 个体轨迹
+  scale_x_continuous(breaks = seq(1, 67, by = 10)) +  # 优化刻度
+  labs(x = "Observation Week", y = "Standardized Outdegree",
+       title = "Individual Outdegree Trajectories with Population Trend") +
+  theme_bw(base_size = 12) 
+# 绘制入度时序图（带密度估计）
+p_in <- ggplot(dd[which(dd$id != "id22"), ], aes(x = time, y = indegree, group = id)) +
+  geom_line(aes(color = category), alpha = 0.6, linewidth = 0.4) +  # 个体轨迹
+  scale_x_continuous(breaks = seq(1, 67, by = 10)) +  # 优化刻度
+  labs(x = "Observation Week", y = "Standardized Outdegree",
+       title = "Individual indegree Trajectories with Population Trend") +
+  theme_bw(base_size = 12)
+plot(p_out)
+plot(p_in)
+```
+
+### Top 4 individuals with the highest cumulative indegree/outdegree
+```{r echo=FALSE}
+mean_outdegree <- rowMeans(xxx_a)
+mean_indegree <- rowMeans(xxx_b)
+individuals <- data.frame(
+  id = paste0("id", 1:n),  # 个体ID
+  mean_outdegree = mean_outdegree,
+  mean_indegree = mean_indegree
+)
+# 定义高出度和高入度的标准（95%分位数）
+outdegree_threshold <- quantile(individuals$mean_outdegree, 0.94)
+indegree_threshold <- quantile(individuals$mean_indegree, 0.94)
+high_outdegree <- individuals %>% filter(mean_outdegree > outdegree_threshold)
+high_indegree <- individuals %>% filter(mean_indegree > indegree_threshold)
+ftrans = function(t) {
+  return(as.Date("20080908", format = "%Y%m%d") + (as.Date("20090625", format = "%Y%m%d") - as.Date("20080908", format = "%Y%m%d")) * t)
+}
+# Plot for high-indegree individuals (most popular)
+ggplot(data_full %>% filter(id %in% high_indegree$id), aes(x = time)) +
+  geom_line(aes(y = outdegree, color = "Outdegree"), alpha = 0.3) +
+  geom_line(aes(y = indegree, color = "Indegree"), alpha = 0.3) +
+  facet_wrap(~id, scales = "free_y") +
+  theme_minimal() +
+  labs(title = "Most Popular Individuals, Highest indegree (Top 4)",
+       x = "Time", y = "Degree") +
+  scale_color_manual(values = c("Outdegree" = "blue", "Indegree" = "red"))
+
+# Plot for high-outdegree individuals (most outgoing)
+ggplot(data_full %>% filter(id %in% high_outdegree$id), aes(x = time)) +
+  geom_line(aes(y = outdegree, color = "Outdegree"), alpha = 0.3) +
+  geom_line(aes(y = indegree, color = "Indegree"), alpha = 0.3) +
+  facet_wrap(~id, scales = "free_y") +
+  theme_minimal() +
+  labs(title = "Most Outgoing Individuals, Highest outdegree (Top 4)",
+       x = "Time", y = "Degree") +
+  scale_color_manual(values = c("Outdegree" = "blue", "Indegree" = "red"))
+```
+
+### Top 4 individuals with the highest volatility in indegree/outdegree
+```{r echo=FALSE}
+# 计算每个个体的平均出度和入度
+sd_outdegree <- apply(xxx_a, 1, sd)
+sd_indegree <- apply(xxx_b, 1, sd)
+# 创建数据框
+individuals <- data.frame(
+  id = paste0("id", 1:n),  # 个体ID
+  sd_outdegree = sd_outdegree,
+  sd_indegree = sd_indegree
+)
+# 定义高出度和高入度的标准（75%分位数）
+outdegree_threshold <- quantile(individuals$sd_outdegree, 0.94)
+indegree_threshold <- quantile(individuals$sd_indegree, 0.94)
+highsd_outdegree <- individuals %>% filter(sd_outdegree > outdegree_threshold)
+highsd_indegree <- individuals %>% filter(sd_indegree > indegree_threshold)
+
+# 输出结果
+ftrans = function(t) {
+  return(as.Date("20080908", format = "%Y%m%d") + (as.Date("20090625", format = "%Y%m%d") - as.Date("20080908", format = "%Y%m%d")) * t)
+}
+ggplot(data_full %>% filter(id %in% highsd_indegree$id), aes(x = time)) +
+  geom_line(aes(y = outdegree, color = "Outdegree"), alpha = 0.3) +
+  geom_line(aes(y = indegree, color = "Indegree"), alpha = 0.3) +
+  facet_wrap(~id, scales = "free_y") +
+  theme_minimal() +
+  labs(title = "Individuals with the highest volatility in indegree, top 4",
+       x = "time", y = "alpha and beta") +
+  scale_color_manual(values = c("Outdegree" = "blue", "Indegree" = "red"))
+
+ggplot(data_full %>% filter(id %in% highsd_outdegree$id), aes(x = time)) +
+  geom_line(aes(y = outdegree, color = "Outdegree"), alpha = 0.3) +
+  geom_line(aes(y = indegree, color = "Indegree"), alpha = 0.3) +
+  facet_wrap(~id, scales = "free_y") +
+  theme_minimal() +
+  labs(title = "Individuals with the highest volatility in outdegree, top 4",
+       x = "time", y = "alpha and beta") +
+  scale_color_manual(values = c("Outdegree" = "blue", "Indegree" = "red"))
+```
+
+### Group Changes
+To evalue the time volatility of $\alpha$ and $\beta$
+
+We first Divide the observation period into 5 equal intervals: $T_1,...T_5$. 
+
+For $t$th interval, categorize individuals into 4 groups based on $\int_{T_t} \alpha(t)dt$: indegree (social receptiveness) and $\int_{T_t} \beta(t) dt$: outdegree (social initiative):
+ 
+- High In & High Out (Social Hubs)
+- High In & Low Out (Passive Influencers)
+- Low In & High Out (Social Catalysts)
+- Low In & Low Out (Peripheral Observers)
+
+Compute the proportion of individuals shifting between categories across intervals.
+Use alluvial diagrams to illustrate the transitions
+
+
+```{r echo=FALSE}
+time_points <- 1:67
+seg_num = 5
+time_segments <- cut(time_points, breaks=seg_num, labels=FALSE)
+outdegree_median <- median(as.numeric(xxx_a))
+indegree_median <- median(as.numeric(xxx_b))
+classification_list <- list()
+# 遍历每个时间段并分类
+for (seg in 1:seg_num) {
+  # 提取当前时间段的时间点
+  current_times <- which(time_segments == seg)
+  # 提取当前时间段的出度和入度数据
+  # subgroups <- which(year_school == "Freshman")
+  # subgroups <- which(year_school == "GRT / Other")
+  # subgroups <- which(year_school != "GRT / Other")
+  subgroups <- 1:n
+  current_xxx_a <- xxx_a[subgroups, current_times, drop=FALSE]
+  current_xxx_b <- xxx_b[subgroups, current_times, drop=FALSE]
+  mean_outdegree <- rowMeans(current_xxx_a)
+  mean_indegree <- rowMeans(current_xxx_b)
+  # 分类个体
+  classification <- data.frame(
+    id = rownames(current_xxx_a),
+    segment = seg,
+    category = case_when(
+      mean_outdegree > outdegree_median & mean_indegree > indegree_median ~ "High In & High Out",
+      mean_outdegree > outdegree_median & mean_indegree <= indegree_median ~ "Low In & High Out",
+      mean_outdegree <= outdegree_median & mean_indegree > indegree_median ~ "High In & Low Out",
+      mean_outdegree <= outdegree_median & mean_indegree <= indegree_median ~ "Low In & Low Out"
+    )
+  )
+  # 存储结果
+  classification_list[[seg]] <- classification
+}
+
+# 合并所有时间段的分类结果
+all_classification <- do.call(rbind, classification_list)
+
+# 创建宽格式数据框，展示每个个体在每个时间段的类别
+classification_wide <- all_classification %>%
+  pivot_wider(names_from = segment, values_from = category, names_prefix = "seg_")
+alluv_data <- classification_wide %>%
+  pivot_longer(
+    cols = starts_with("seg_"),
+    names_to = "time_segment",
+    values_to = "category"
+  ) %>%
+  mutate(
+    time_segment = factor(gsub("seg_", "", time_segment), levels = 1:seg_num),
+    category = factor(category)
+  )
+# --- 自定义颜色映射 ---
+category_colors <- c(
+  "High In & High Out" = "#d73027",  # 深红
+  "High In & Low Out"  = "#fc8d59",  # 浅红
+  "Low In & High Out"  = "#4575b4",  # 深蓝
+  "Low In & Low Out"   = "#74add1"   # 浅蓝
+)
+
+# --- 高级可视化 ---
+ggplot(alluv_data, 
+       aes(x = time_segment, 
+           stratum = category, 
+           alluvium = id,
+           fill = category)) +
+  # 流线图层（调整透明度增强层次感）
+  geom_flow(alpha = 0.7, curve_type = "cubic") +
+  # 分层区块（隐藏边框）
+  geom_stratum(width = 0.3, color = NA) +
+  # 时间轴标签（专业排版）
+  scale_x_discrete(
+    name = NULL,
+    expand = expansion(add = 0.1),
+    labels = parse(text = paste0("T[", 1:seg_num, "]"))
+  ) +
+  # 颜色映射与图例设置
+  scale_fill_manual(
+    name = NULL,
+    # labels = c(
+    #   "High In/High Out",
+    #   "High In/Low Out",
+    #   "Low In/High Out",
+    #   "Low In/Low Out"
+    # ),
+    labels = c(
+      "Social Hubs",
+      "Passive Influencers",
+      "Social Catalysts",
+      "Peripheral Observers"
+    ),
+    values = category_colors,
+    breaks = names(category_colors),
+  ) +
+  # 学术论文风格主题
+  theme_minimal(base_size = 12) +
+  theme(
+    axis.text.x = element_text(size = 14, face = "bold"),
+    panel.grid = element_blank(),
+    axis.text.y = element_blank(),
+    axis.title.y = element_blank(),
+    legend.position = "bottom",
+    legend.key.height = unit(0.8, "lines"),
+    legend.text = element_text(size = rel(0.9)),
+    plot.margin = margin(1, 2, 1, 1, "cm")
+  ) +
+  # 流线方向箭头（增强可读性）
+  annotate(
+    "segment",
+    x = 0.9, xend = 5.1, y = -0.05, yend = -0.05,
+    arrow = arrow(length = unit(0.3, "cm")),
+    color = "gray40"
+  ) +
+  # # 比例说明（可选）
+  # labs(caption = "Flow width represents proportion of entities") +
+  # 颜色强化（防止打印褪色）
+  guides(fill = guide_legend(override.aes = list(alpha = 1))) -> pp1
+pdf(file = "mit_plots/Flow_mit.pdf", width = 10, height = 6)
+plot(pp1)
+dev.off()
+```
+
+```{r echo=FALSE, eval=F}
+# 1. 计算各segment中不同group的比例
+segment_proportions <- all_classification %>%
+  group_by(segment, category) %>%
+  summarise(count = n(), .groups = "drop_last") %>%
+  mutate(proportion = count / sum(count)) %>%
+  ungroup()
+
+# 输出各segment的group比例
+print(segment_proportions, n = Inf)
+
+# 2. 计算相邻segment间的转化比例
+transition_rates <- classification_wide %>%
+  # 计算相邻segment间的状态变化
+  mutate(
+    seg1_to_seg2 = ifelse(seg_1 != seg_2, "Changed", "Stayed"),
+    seg2_to_seg3 = ifelse(seg_2 != seg_3, "Changed", "Stayed"),
+    seg3_to_seg4 = ifelse(seg_3 != seg_4, "Changed", "Stayed"),
+    seg4_to_seg5 = ifelse(seg_4 != seg_5, "Changed", "Stayed")
+  ) %>%
+  # 计算各transition的变化率
+  summarise(
+    rate_1_2 = sum(seg1_to_seg2 == "Changed")/n(),
+    rate_2_3 = sum(seg2_to_seg3 == "Changed")/n(),
+    rate_3_4 = sum(seg3_to_seg4 == "Changed")/n(),
+    rate_4_5 = sum(seg4_to_seg5 == "Changed")/n()
+  )
+
+# 输出转化率矩阵
+transition_matrix <- classification_wide %>%
+  # 创建所有相邻segment的组合
+  select(id, seg_1:seg_5) %>%
+  pivot_longer(
+    cols = -id,
+    names_to = "segment",
+    values_to = "category"
+  ) %>%
+  mutate(segment = as.numeric(gsub("seg_", "", segment))) %>%
+  arrange(id, segment) %>%
+  group_by(id) %>%
+  mutate(
+    from = lag(category),
+    to = category
+  ) %>%
+  filter(!is.na(from)) %>%
+  ungroup() %>%
+  # 计算转移频次
+  count(from, to) %>%
+  # 计算转移概率
+  group_by(from) %>%
+  mutate(prob = n/sum(n)) %>%
+  ungroup()
+
+# 打印转移概率矩阵
+print(transition_matrix, n = Inf)
+
+# 3. 可视化转化比例
+ggplot(transition_matrix, aes(x = from, y = to, fill = prob)) +
+  geom_tile(color = "white") +
+  geom_text(aes(label = scales::percent(prob, accuracy = 1)), 
+            color = "white", size = 4) +
+  scale_fill_gradient(low = "#74add1", high = "#d73027", 
+                      labels = scales::percent) +
+  labs(x = "Previous Segment", y = "Current Segment",
+       title = "Social Role Transition Probabilities",
+       fill = "Transition\nProbability") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) -> pp2
+plot(pp2)
+pdf(file = "mit_plots/Trans_P_mit.pdf", width = 8, height = 7)
+plot(pp2)
+dev.off()
+```
+
+
+```{r echo=FALSE}
+# 1. 各segment的group比例折线图
+segment_proportions <- all_classification %>%
+  group_by(segment, category) %>%
+  summarise(count = n(), .groups = "drop_last") %>%
+  mutate(proportion = count / sum(count)) %>%
+  ungroup()
+
+# 绘制比例变化折线图
+ggplot(segment_proportions, aes(x = segment, y = proportion, color = category)) +
+  geom_line(size = 1.2) +
+  geom_point(size = 3) +
+  scale_x_continuous(  # 改用连续型坐标轴
+    name = NULL,
+    breaks = 1:seg_num,  # 确保刻度位置正确
+    labels = parse(text = paste0("T[", 1:seg_num, "]")),
+    expand = expansion(mult = 0.05)  # 温和的空白扩展
+  ) + 
+  scale_color_manual(
+    name = NULL,
+    labels = c(
+      "Social Hubs",
+      "Passive Influencers",
+      "Social Catalysts",
+      "Peripheral Observers"
+    ),
+    values = category_colors,
+    breaks = names(category_colors),
+  ) + 
+  scale_y_continuous(labels = scales::percent) +
+  labs(y = "Proportion", color = NULL) +  # x轴标题已在scale_x_*中设置
+  theme_minimal(base_size = 12) +
+  theme(
+    legend.position = "bottom",
+    axis.text.x = element_text(size = 12)  # 可选：调整刻度标签大小
+  ) -> pp3
+plot(pp3)
+pdf(file = "mit_plots/line_mit.pdf", width = 8, height = 7)
+plot(pp3)
+dev.off()
+```
+
+
+```{r echo=FALSE}
+# 2. 按segment分组的转移概率矩阵
+transition_matrices <- classification_wide %>%
+  select(id, seg_1:seg_5) %>%
+  pivot_longer(
+    cols = -id,
+    names_to = "segment",
+    values_to = "category"
+  ) %>%
+  mutate(segment = as.numeric(gsub("seg_", "", segment))) %>%
+  arrange(id, segment) %>%
+  group_by(id) %>%
+  mutate(
+    from_segment = segment,
+    from_category = lag(category),
+    to_category = category
+  ) %>%
+  filter(!is.na(from_category)) %>%
+  ungroup() %>%
+  # 按segment分组计算转移概率
+  group_by(from_segment, from_category, to_category) %>%
+  summarise(n = n(), .groups = "drop_last") %>%
+  mutate(prob = n / sum(n)) %>%
+  ungroup()
+
+# 为每个segment创建转移概率热力图
+transition_plots <- lapply(2:(seg_num), function(s) {
+  transition_matrices %>%
+    filter(from_segment == s) %>%
+    ggplot(aes(x = from_category, y = to_category, fill = prob)) +
+    geom_tile(color = "white") +
+    geom_text(aes(label = scales::percent(prob, accuracy = 1)), 
+              color = "white", size = 3.5) +
+    scale_fill_gradient(low = "#74add1", high = "#d73027", 
+                       limits = c(0, 1), labels = scales::percent) +
+    labs(x = "From Role", y = "To Role", 
+         title = paste("Segment", s-1, "→", s, "Transitions"),
+         fill = "Probability") +
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1),
+          plot.title = element_text(size = 10))
+})
+
+# 使用patchwork包组合所有热力图
+library(ggpubr)
+ggarrange(transition_plots[[1]], transition_plots[[2]],
+          transition_plots[[3]], transition_plots[[4]],
+          nrow=2, ncol = 2, common.legend = T) 
+```
+
+```{r echo=F}
+# 计算每个个体的状态转移次数
+transition_counts <- classification_wide %>%
+  mutate(
+    trans_count = rowSums(.[2:seg_num] != .[3:(seg_num+1)], na.rm = TRUE)
+  ) %>%
+  select(id, trans_count)
+
+# 统计转移次数的分布
+transition_stats <- transition_counts %>%
+  group_by(trans_count) %>%
+  summarise(
+    count = n(),
+    proportion = n() / nrow(transition_counts)
+  ) %>%
+  ungroup()
+
+# 输出转移次数统计表
+# cat("State Transition Counts Distribution:\n")
+# print(transition_stats, n = Inf)
+
+# 可视化转移次数分布
+ggplot(transition_stats, aes(x = factor(trans_count), y = count)) +
+  geom_col(fill = "#4575b4", alpha = 0.8) +
+  geom_text(aes(label = paste0(count, "\n(", scales::percent(proportion, 1), ")")),
+            vjust = -0.5, size = 4) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1))) +
+  labs(x = "Number of State Transitions", 
+       y = "Count of Individuals",
+       title = "Distribution of Social Role Transition Counts",
+       subtitle = paste("Total", nrow(transition_counts), "individuals across", seg_num-1, "transitions")) +
+  theme_minimal(base_size = 12) +
+  theme(panel.grid.major.x = element_blank())
+
+# 检查转移次数与初始状态的关系
+initial_state <- classification_wide %>%
+  mutate(trans_count = transition_counts$trans_count) %>%
+  group_by(seg_1, trans_count) %>%
+  summarise(count = n(), .groups = "drop") %>%
+  group_by(seg_1) %>%
+  mutate(prop = count / sum(count)) %>%
+  ungroup()
+
+ggplot(initial_state, aes(x = seg_1, y = prop, fill = factor(trans_count))) +
+  geom_bar(stat = "identity", position = "stack") +
+  geom_text(aes(label = scales::percent(prop, 1)), 
+            position = position_stack(vjust = 0.5),
+            color = "white", size = 3) +
+  scale_fill_brewer(palette = "RdYlBu", direction = -1) +
+  scale_y_continuous(labels = scales::percent) +
+  labs(x = "Initial Social Role", y = "Proportion",
+       fill = "Transition\nCount",
+       title = "Transition Counts by Initial Social Role") +
+  theme_minimal() +
+  theme(legend.position = "right")
+```
+```{r echo=F}
+# 计算每个segment transition的转移情况
+segment_transitions <- classification_wide %>%
+  mutate(
+    trans_1_2 = ifelse(seg_1 != seg_2, 1, 0),
+    trans_2_3 = ifelse(seg_2 != seg_3, 1, 0),
+    trans_3_4 = ifelse(seg_3 != seg_4, 1, 0),
+    trans_4_5 = ifelse(seg_4 != seg_5, 1, 0)
+  ) %>%
+  summarise(
+    seg1_to_seg2 = sum(trans_1_2),
+    seg2_to_seg3 = sum(trans_2_3),
+    seg3_to_seg4 = sum(trans_3_4),
+    seg4_to_seg5 = sum(trans_4_5),
+    total_individuals = n()
+  ) %>%
+  pivot_longer(
+    cols = starts_with("seg"),
+    names_to = "transition",
+    values_to = "changed_count"
+  ) %>%
+  mutate(
+    changed_pct = changed_count / total_individuals,
+    transition = gsub("_to_", " → ", transition)
+  )
+
+# 输出结果
+# cat("Transition Statistics Between Segments:\n")
+# print(segment_transitions, n = Inf)
+
+# 可视化每个transition的转移比例
+ggplot(segment_transitions, aes(x = transition, y = changed_pct)) +
+  geom_col(fill = "#1b9e77", alpha = 0.8) +
+  geom_text(aes(label = paste0(changed_count, " (", scales::percent(changed_pct, 1), ")")),
+            vjust = -0.5, size = 4) +
+  scale_y_continuous(labels = scales::percent, limits = c(0, 1)) +
+  labs(x = "Segment Transition", y = "Percentage Changed",
+       title = "Social Role Transition Rates Between Segments",
+       subtitle = paste("Total", unique(segment_transitions$total_individuals), "individuals")) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+# 按初始状态分组查看转移倾向
+initial_state_transitions <- classification_wide %>%
+  mutate(
+    trans_1_2 = ifelse(seg_1 != seg_2, 1, 0),
+    trans_2_3 = ifelse(seg_2 != seg_3, 1, 0),
+    trans_3_4 = ifelse(seg_3 != seg_4, 1, 0),
+    trans_4_5 = ifelse(seg_4 != seg_5, 1, 0)
+  ) %>%
+  group_by(Initial_State = seg_1) %>%
+  summarise(
+    seg1_to_seg2 = mean(trans_1_2),
+    seg2_to_seg3 = mean(trans_2_3),
+    seg3_to_seg4 = mean(trans_3_4),
+    seg4_to_seg5 = mean(trans_4_5),
+    .groups = "drop"
+  ) %>%
+  pivot_longer(
+    cols = starts_with("seg"),
+    names_to = "transition",
+    values_to = "change_rate"
+  ) %>%
+  mutate(
+    transition = gsub("_to_", " → ", transition)
+  )
+
+# 可视化初始状态对转移率的影响
+ggplot(initial_state_transitions, aes(x = transition, y = change_rate, fill = Initial_State)) +
+  geom_col(position = "dodge") +
+  geom_text(aes(label = scales::percent(change_rate, 1)),
+            position = position_dodge(width = 0.9),
+            vjust = -0.5, size = 3) +
+  scale_fill_manual(values = category_colors) +
+  scale_y_continuous(labels = scales::percent) +
+  labs(x = "Segment Transition", y = "Transition Rate",
+       title = "Transition Rates by Initial Social Role",
+       fill = "Initial Role") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        legend.position = "bottom")
+```
+
