@@ -80,9 +80,9 @@ merge(bb, new_stations, by = "start_stations_id") -> bb
 ```
 
 ```{r include=F}
-load(file = "~/DCCOX/bikeplots3/xkk0.0532843989577126_2.rdata")
-load(file = "~/DCCOX/bikeplots3/xkkCI0.0532843989577126_2.rdata")
-load(file = "~/DCCOX/bikeplots3/xkkHomo0.0532843989577126_2.rdata")
+load(file = "bikeplots3/xkk0.0532843989577126_2.rdata")
+load(file = "bikeplots3/xkkCI0.0532843989577126_2.rdata")
+load(file = "bikeplots3/xkkHomo0.0532843989577126_2.rdata")
 xkk <- xkk[, 21:91]
 xkkCI <- xkkCI[, 21:91]
 xkkHomo <- xkkHomo[, 21:91]
@@ -122,19 +122,19 @@ p4 = data.frame(t = tseq%>%ftrans(),
                 yl = c(xkk[2*n - 1 + pp,] - 1.96*xkkCI[2*n - 1 + pp,], xkkHomo[pp,]),
                 yu = c(xkk[2*n - 1 + pp,] + 1.96*xkkCI[2*n - 1 + pp,], xkkHomo[pp,]),
                 het = c(rep("y", length(t2)), rep("n", length(t2))))
-key_dates = as.Date(c("2018-05-23", "2018-09-06", "2018-11-10"))
+# key_dates = as.Date(c("2018-05-28", "2018-09-03", "2018-11-13"))
 ggplot(p1, aes(x = t, y = y, group = het, colour = het, fill = het)) +
   geom_line(linewidth = 0.3) +
   geom_ribbon(aes(ymin = yl, ymax = yu), alpha = 0, linetype = "dashed", size = 0.3) +
-  geom_vline(
-    xintercept = key_dates, 
-    linetype = "dotted", 
-    color = "black", 
-    size = 0.6,
-    alpha = 0.7
-  )+
+  # geom_vline(
+  #   xintercept = key_dates, 
+  #   linetype = "dotted", 
+  #   color = "black", 
+  #   size = 0.6,
+  #   alpha = 0.7
+  # )+
+  scale_x_date(date_labels = "%b %d", breaks = "9 week") +
   scale_color_manual(values=c("#619CFF", "red")) +
-  scale_x_date(date_labels = "%b %d", breaks = "6 week") +
   xlab(expression(italic("t"))) +
   ylab(expression(widehat(italic(gamma))[1](t))) +
   theme(legend.position = "none") -> pp1
@@ -145,13 +145,14 @@ dev.off()
 ggplot(p2, aes(x = t, y = y, group = het, colour = het, fill = het)) +
   geom_line(linewidth = 0.3) +
   geom_ribbon(aes(ymin = yl, ymax = yu), alpha = 0, linetype = "dashed", size = 0.3)+
-  geom_vline(
-    xintercept = key_dates, 
-    linetype = "dotted", 
-    color = "black", 
-    size = 0.6,
-    alpha = 0.7
-  ) +
+  # geom_vline(
+  #   xintercept = key_dates, 
+  #   linetype = "dotted", 
+  #   color = "black", 
+  #   size = 0.6,
+  #   alpha = 0.7
+  # ) +
+  scale_x_date(date_labels = "%b %d", breaks = "9 week") +
   scale_color_manual(values=c("#619CFF", "red")) +
   xlab(expression(italic("t"))) +
   ylab(expression(widehat(italic(gamma))[2](t))) +
@@ -164,13 +165,14 @@ dev.off()
 ggplot(p3, aes(x = t, y = y, group = het, colour = het, fill = het)) +
   geom_line(linewidth = 0.3) +
   geom_ribbon(aes(ymin = yl, ymax = yu), alpha = 0, linetype = "dashed", size = 0.5)+
-  geom_vline(
-    xintercept = key_dates, 
-    linetype = "dotted", 
-    color = "black", 
-    size = 0.6,
-    alpha = 0.7
-  ) +
+  # geom_vline(
+  #   xintercept = key_dates, 
+  #   linetype = "dotted", 
+  #   color = "black", 
+  #   size = 0.6,
+  #   alpha = 0.7
+  # ) +
+  scale_x_date(date_labels = "%b %d", breaks = "9 week") +
   scale_color_manual(values=c("#619CFF", "red")) +
   xlab(expression(italic("t"))) +
   ylab(expression(widehat(italic(gamma))[3](t))) + ylim(0, 4) +
@@ -182,13 +184,14 @@ dev.off()
 ggplot(p4, aes(x = t, y = y, group = het, colour = het, fill = het)) +
   geom_line(linewidth = 0.3) +
   geom_ribbon(aes(ymin = yl, ymax = yu), alpha = 0, linetype = "dashed", size = 0.5)+
-  geom_vline(
-    xintercept = key_dates, 
-    linetype = "dotted", 
-    color = "black", 
-    size = 0.6,
-    alpha = 0.7
-  ) +
+  # geom_vline(
+  #   xintercept = key_dates, 
+  #   linetype = "dotted", 
+  #   color = "black", 
+  #   size = 0.6,
+  #   alpha = 0.7
+  # ) +
+  scale_x_date(date_labels = "%b %d", breaks = "9 week") +
   scale_color_manual(values=c("#619CFF", "red")) +
   xlab(expression(italic("t"))) +
   ylab(expression(widehat(italic(gamma))[4](t))) + ylim(0, 4) +

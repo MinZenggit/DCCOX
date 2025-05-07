@@ -243,9 +243,9 @@ save(xkkHomo, file = paste0("bikeplots3/xkkHomo", h1,"_3.rdata"))
 library(ggplot2)
 library(dplyr)
 
-load(file = "~/DCCOX/bikeplots3/xkk0.0532843989577126_2.rdata")
-load(file = "~/DCCOX/bikeplots3/xkkCI0.0532843989577126_2.rdata")
-load(file = "~/DCCOX/bikeplots3/xkkHomo0.0532843989577126_2.rdata")
+load(file = "bikeplots3/xkk0.0532843989577126_2.rdata")
+load(file = "bikeplots3/xkkCI0.0532843989577126_2.rdata")
+load(file = "bikeplots3/xkkHomo0.0532843989577126_2.rdata")
 xkk <- xkk[, 21:91]
 xkkCI <- xkkCI[, 21:91]
 xkkHomo <- xkkHomo[, 21:91]
@@ -253,7 +253,8 @@ tseq = seq(0.05,0.95,0.01)[21:91]
 ftrans = function(t) {
   return(as.Date("20180101", format = "%Y%m%d") + (as.Date("20181231", format = "%Y%m%d") - as.Date("20180101", format = "%Y%m%d")) * t)
 }
-key_dates = c(0.39, 0.68, 0.86)
+key_dates = c(0.40, 0.68, 0.86)
+
 n = 542
 ave1 = colSums(xkk[1:n,])/n
 ave2 = colSums(xkk[(n+1):(2*n-1),])/(n-1)

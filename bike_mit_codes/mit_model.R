@@ -17,18 +17,18 @@ nn = nrow(proxyData$trail)
 p = 5
 trail = proxyData$trail
 
-Nij = matrix(0, nrow = n, ncol = n)
-for (z in 1:nn) {
-  i = trail[z, 1]
-  j = trail[z, 2]
-  Nij[i, j] = Nij[i, j] + 1
-}
-write.csv(Nij, file = "mit_plots/Nij_mit.csv")
-colSums(Nij) -> colsum_MIT
-rowSums(Nij) -> rowsum_MIT
-cbind(colsum_MIT, rowsum_MIT) -> dd_MIT
-colnames(dd_MIT) = c("colsum", "rowsum")
-write.csv(dd_MIT, file = "mit_plots/dd_mit.csv")
+# Nij = matrix(0, nrow = n, ncol = n)
+# for (z in 1:nn) {
+#   i = trail[z, 1]
+#   j = trail[z, 2]
+#   Nij[i, j] = Nij[i, j] + 1
+# }
+# write.csv(Nij, file = "mit_plots/Nij_mit.csv")
+# colSums(Nij) -> colsum_MIT
+# rowSums(Nij) -> rowsum_MIT
+# cbind(colsum_MIT, rowsum_MIT) -> dd_MIT
+# colnames(dd_MIT) = c("colsum", "rowsum")
+# write.csv(dd_MIT, file = "mit_plots/dd_mit.csv")
 
 
 
@@ -108,9 +108,9 @@ xkkCI = xkkCI[,5:71]
 seq(0.2,0.9,0.01)[5:71]
 # save(xkk, file = "mit_plots/xkk.rdata")
 # save(xkkCI, file = "mit_plots/xkkCI.rdata")
-
 library(ggplot2)
-
+load(file = "mit_plots/xkk.rdata")
+load(file = "mit_plots/xkkCI.rdata")
 ave1 = colSums(xkk[1:n,])/n
 ave2 = colSums(xkk[(n+1):(2*n-1),])/(n-1)
 
@@ -137,23 +137,19 @@ p2 = data.frame(t = ftrans(seq(0.24,0.9,0.01)),
 ggplot(p1, aes(x = t, y = y)) +
   geom_line(color = "red", size = 0.75) +
   geom_ribbon(aes(ymin = yl, ymax = yu), alpha = 0, color = "red", linetype = "dashed", size = 0.75) +
-  scale_x_date(date_labels = "%b %d", breaks = "6 week") +
+  scale_x_date(date_labels = "%b %d", breaks = "8 week") +
   scale_y_continuous(breaks=seq(-2, 6, 2), limits = c(-2, 6)) +
   xlab(expression(italic("t"))) +
-  ylab(expression(widehat(italic(alpha))[i]^"'"~(t))) +
-  theme(panel.background = element_rect(fill = "white")) + 
-  theme(panel.border = element_rect(color = "black", fill = NA, size = 1))
+  ylab(expression(widehat(italic(alpha))[i]^"'"~(t))) -> alpha_1
 
 # 1b
 ggplot(p2, aes(x = t, y = y)) +
   geom_line(color = "red", size = 0.75) +
   geom_ribbon(aes(ymin = yl, ymax = yu), alpha = 0, color = "red", linetype = "dashed", size = 0.75) +
-  scale_x_date(date_labels = "%b %d", breaks = "6 week") +
+  scale_x_date(date_labels = "%b %d", breaks = "8 week") +
   scale_y_continuous(breaks=seq(-0, 5, 1), limits = c(-0, 5)) +
   xlab(expression(italic("t"))) +
-  ylab(expression(widehat(italic(beta))[i]^"'"~(t))) +
-  theme(panel.background = element_rect(fill = "white")) + 
-  theme(panel.border = element_rect(color = "black", fill = NA, size = 1))
+  ylab(expression(widehat(italic(beta))[i]^"'"~(t))) -> beta_1
 
 
 
@@ -174,24 +170,32 @@ p2 = data.frame(t = ftrans(seq(0.24,0.9,0.01)),
 ggplot(p1, aes(x = t, y = y)) +
   geom_line(color = "red", size = 0.75) +
   geom_ribbon(aes(ymin = yl, ymax = yu), alpha = 0, color = "red", linetype = "dashed", size = 0.75) +
-  scale_x_date(date_labels = "%b %d", breaks = "6 week") +
+  scale_x_date(date_labels = "%b %d", breaks = "8 week") +
   scale_y_continuous(breaks=seq(-8, 6, 2), limits = c(-8, 6)) +
   xlab(expression(italic("t"))) +
-  ylab(expression(widehat(italic(alpha))[i]^"'"~(t))) +
-  theme(panel.background = element_rect(fill = "white")) + 
-  theme(panel.border = element_rect(color = "black", fill = NA, size = 1))
+  ylab(expression(widehat(italic(alpha))[i]^"'"~(t))) -> alpha_28
 
 # 28 b
 ggplot(p2, aes(x = t, y = y)) +
   geom_line(color = "red", size = 0.75) +
   geom_ribbon(aes(ymin = yl, ymax = yu), alpha = 0, color = "red", linetype = "dashed", size = 0.75) +
-  scale_x_date(date_labels = "%b %d", breaks = "6 week") +
+  scale_x_date(date_labels = "%b %d", breaks = "8 week") +
   scale_y_continuous(breaks=seq(-2, 2, 1), limits = c(-2, 2)) +
   xlab(expression(italic("t"))) +
-  ylab(expression(widehat(italic(beta))[i]^"'"~(t))) +
-  theme(panel.background = element_rect(fill = "white")) + 
-  theme(panel.border = element_rect(color = "black", fill = NA, size = 1))
+  ylab(expression(widehat(italic(beta))[i]^"'"~(t))) -> beta_28
 
+pdf(file = "mit_plots/alpha_1.pdf", width = 5, height = 5)
+plot(alpha_1)
+dev.off()
+pdf(file = "mit_plots/beta_1.pdf", width = 5, height = 5)
+plot(beta_1)
+dev.off()
+pdf(file = "mit_plots/alpha_28.pdf", width = 5, height = 5)
+plot(alpha_28)
+dev.off()
+pdf(file = "mit_plots/beta_28.pdf", width = 5, height = 5)
+plot(beta_28)
+dev.off()
 
 # GAMMA
 
@@ -247,6 +251,9 @@ save(xkkHomo, file = "mit_plots/xkkHomo.rdata")
 # plot(test1, test2)
 # plot(xk1, xk2)
 
+load(file = "mit_plots/xkk.rdata")
+load(file = "mit_plots/xkkCI.rdata")
+load(file = "mit_plots/xkkHomo.rdata")
 pk = 125+1 # same floor
 pk = 125+2 # 0
 pk = 125+3 # 1
@@ -256,80 +263,72 @@ pk = 125+5 # 3
 
 t2 = seq(0.24,0.9,0.01)
 
-p1 = data.frame(t = ftrans(t2), 
+pd1 = data.frame(t = ftrans(t2), 
                 y = xkk[pk,],
                 yl = xkk[pk,] - 1.96*xkkCI[pk,],
                 yu = xkk[pk,] + 1.96*xkkCI[pk,])
 
 pp = 1 # change according to pk (1,2,3,4,5)
-p1 = data.frame(t = ftrans(seq(0.24,0.9,0.01)), 
+pd1 = data.frame(t = ftrans(seq(0.24,0.9,0.01)), 
                 y = c(xkk[2*n - 1 + pp,], xkkHomo[pp,]),
                 yl = c(xkk[2*n - 1 + pp,] - 1.96*xkkCI[2*n - 1 + pp,], xkkHomo[pp,]),
                 yu = c(xkk[2*n - 1 + pp,] + 1.96*xkkCI[2*n - 1 + pp,], xkkHomo[pp,]),
                 het = c(rep("y", 67), rep("n", 67)))
-ggplot(p1, aes(x = t, y = y, group = het, colour = het, fill = het)) +
+ggplot(pd1, aes(x = t, y = y, group = het, colour = het, fill = het)) +
   geom_line() +
   geom_ribbon(aes(ymin = yl, ymax = yu), alpha = 0, linetype = "dashed", size = 0.7) + 
   scale_color_manual(values=c("#619CFF", "red")) +
-  scale_x_date(date_labels = "%b %d", breaks = "6 week") +
+  scale_x_date(date_labels = "%b %d", breaks = "8 week") +
   xlab(expression(italic("t"))) +
-  ylab(expression(widehat(italic(gamma))[1](t))) +
-  theme(panel.background = element_rect(fill = "white")) + 
-  theme(panel.border = element_rect(color = "black", fill = NA, size = 1)) +
+  ylab(expression(widehat(italic(gamma))[1](t)))+
   theme(legend.position = "none") -> p1
 
 pp = 2 # change according to pk (1,2,3,4,5)
-p1 = data.frame(t = ftrans(seq(0.24,0.9,0.01)), 
+pd1 = data.frame(t = ftrans(seq(0.24,0.9,0.01)), 
                 y = c(xkk[2*n - 1 + pp,], xkkHomo[pp,]),
                 yl = c(xkk[2*n - 1 + pp,] - 1.96*xkkCI[2*n - 1 + pp,], xkkHomo[pp,]),
                 yu = c(xkk[2*n - 1 + pp,] + 1.96*xkkCI[2*n - 1 + pp,], xkkHomo[pp,]),
                 het = c(rep("y", 67), rep("n", 67)))
-ggplot(p1, aes(x = t, y = y, group = het, colour = het, fill = het)) +
+ggplot(pd1, aes(x = t, y = y, group = het, colour = het, fill = het)) +
   geom_line() +
   geom_ribbon(aes(ymin = yl, ymax = yu), alpha = 0, linetype = "dashed", size = 0.7) + 
   scale_color_manual(values=c("#619CFF", "red")) +
-  scale_x_date(date_labels = "%b %d", breaks = "6 week") +
+  scale_x_date(date_labels = "%b %d", breaks = "8 week") +
   xlab(expression(italic("t"))) +
   ylab(expression(widehat(italic(gamma))[2](t))) +
-  theme(panel.background = element_rect(fill = "white")) + 
-  theme(panel.border = element_rect(color = "black", fill = NA, size = 1)) +
   theme(legend.position = "none") -> p2
 
 
 
 pp = 3 # change according to pk (1,2,3,4,5)
-p1 = data.frame(t = ftrans(seq(0.24,0.9,0.01)), 
+pd1 = data.frame(t = ftrans(seq(0.24,0.9,0.01)), 
                 y = c(xkk[2*n - 1 + pp,], xkkHomo[pp,]),
                 yl = c(xkk[2*n - 1 + pp,] - 1.96*xkkCI[2*n - 1 + pp,], xkkHomo[pp,]),
                 yu = c(xkk[2*n - 1 + pp,] + 1.96*xkkCI[2*n - 1 + pp,], xkkHomo[pp,]),
                 het = c(rep("y", 67), rep("n", 67)))
-ggplot(p1, aes(x = t, y = y, group = het, colour = het, fill = het)) +
+ggplot(pd1, aes(x = t, y = y, group = het, colour = het, fill = het)) +
   geom_line() +
   geom_ribbon(aes(ymin = yl, ymax = yu), alpha = 0, linetype = "dashed", size = 0.7) + 
   scale_color_manual(values=c("#619CFF", "red")) +
-  scale_x_date(date_labels = "%b %d", breaks = "6 week") +
+  scale_x_date(date_labels = "%b %d", breaks = "8 week") +
   xlab(expression(italic("t"))) +
-  ylab(expression(widehat(italic(gamma))[3](t))) +
-  theme(panel.background = element_rect(fill = "white")) + 
-  theme(panel.border = element_rect(color = "black", fill = NA, size = 1)) +
-  theme(legend.position = "none") -> p3
+  ylab(expression(widehat(italic(gamma))[3](t)))+
+  theme(legend.position = "none")  -> p3
 
 
 pp = 4 # change according to pk (1,2,3,4,5)
-p1 = data.frame(t = ftrans(seq(0.24,0.9,0.01)), 
+pd1 = data.frame(t = ftrans(seq(0.24,0.9,0.01)), 
                 y = c(xkk[2*n - 1 + pp,], xkkHomo[pp,]),
                 yl = c(xkk[2*n - 1 + pp,] - 1.96*xkkCI[2*n - 1 + pp,], xkkHomo[pp,]),
                 yu = c(xkk[2*n - 1 + pp,] + 1.96*xkkCI[2*n - 1 + pp,], xkkHomo[pp,]),
                 het = c(rep("y", 67), rep("n", 67)))
-ggplot(p1, aes(x = t, y = y, group = het, colour = het, fill = het)) +
+ggplot(pd1, aes(x = t, y = y, group = het, colour = het, fill = het)) +
   geom_line() +
   geom_ribbon(aes(ymin = yl, ymax = yu), alpha = 0, linetype = "dashed", size = 0.7) + 
   scale_color_manual(values=c("#619CFF", "red")) +
-  scale_x_date(date_labels = "%b %d", breaks = "6 week") +
+  scale_x_date(date_labels = "%b %d", breaks = "8 week") +
   xlab(expression(italic("t"))) +
   ylab(expression(widehat(italic(gamma))[4](t))) +
-  theme(panel.background = element_rect(fill = "white")) + 
-  theme(panel.border = element_rect(color = "black", fill = NA, size = 1)) +
   theme(legend.position = "none") -> p4
 
 pdf(file = "mit_plots/gamma1.pdf")
